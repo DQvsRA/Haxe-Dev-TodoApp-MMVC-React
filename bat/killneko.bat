@@ -1,0 +1,1 @@
+Taskkill /IM neko.exe /F || exit /b

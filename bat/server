@@ -1,0 +1,1 @@
+pm2 startOrRestart ./server/server.config.js && pm2 logs 0 --lines 100

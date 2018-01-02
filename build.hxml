@@ -1,0 +1,10 @@
+-main Main
+-js public/js/todo-haxe-react.js
+-D react_global
+-debug
+-lib msignal
+-lib react
+-lib yloader
+-lib mmvc
+-lib actuate
+-cp src

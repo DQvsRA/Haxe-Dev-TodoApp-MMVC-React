@@ -1,0 +1,104 @@
+body, html {
+    font-family: arial;
+    background: #232323;
+    color: white;
+}
+.todo-list-title {
+	text-align: center;
+	color: #fcfcfc;
+}
+
+.todo-form {
+	text-align: center;
+}
+.todo-form-inp-text {
+	width: 50%;
+	margin: 0 1em 1.5em 1em;
+	padding: 0.25em;
+	max-width: 600px;
+	min-width: 300px;
+}
+.todo-form .locked {
+ 	pointer-events: none;
+}
+.todo-form-btn-add {
+	height: 21px;
+}
+.todo-form-btn-add.locked {
+	opacity : 0.5;
+	color: red;
+}
+.todo-form-inp-text.locked {
+	opacity : 0.5;
+}
+
+.todo-list.locked {
+	opacity : 0.5;
+	pointer-events: none;
+}
+.todo-list-item {
+	margin: 0.75em 0.5em;
+	border: solid 1px #333333;
+	display: flex;
+	flex: auto;
+	justify-content: stretch;
+}
+.todo-list-item.locked {
+	opacity : 0.5;
+	pointer-events: none;
+}
+.todo-list-item-toggle {
+	margin: 1em;
+}
+.todo-list-item-btn {
+	position: relative;
+	display: inline-block;
+	padding: 0.25em;
+	margin-top: 0.5em;
+	width: 60px;
+	height: 21px;
+	border-radius: 4px;
+}
+.todo-list-item-input {
+	border: none;
+	background: none;
+	color: white;
+	display: inline;
+	font-family: inherit;
+	font-size: inherit;
+	padding: none;
+	width: 100%;
+	padding: 0.25em;
+	margin-left: 0.5em;
+}
+.todo-list-item-input.completed {
+	text-decoration: line-through;
+	text-decoration-color: #00ff00;
+	pointer-events: none;
+}
+.todo-list-item-input:focus {
+    outline-width: 1px;
+}
+
+.popup-info
+{
+	position: fixed;
+    background: rebeccapurple;
+    text-align: center;
+    padding: 1em;
+    top: 0;
+    right: -100%;
+}
+
+.popup-info-animation {
+	animation-name: bounce;
+	animation-duration: 1s;
+	animation-iteration-count: 2;
+	animation-fill-mode: both;
+	animation-direction: alternate;
+}
+
+@keyframes bounce {
+	0% { right: -100%; }
+	40%, 100% { right: 0; }
+}
