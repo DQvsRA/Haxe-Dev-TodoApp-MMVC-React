@@ -1,6 +1,5 @@
 package app.controller.signals.todolist;
-import msignal.Signal.Signal1;
-import msignal.Signal.Signal2;
+import msignal.Signal;
 
 class UpdateTodoSignal extends Signal2<Int, String>
 {

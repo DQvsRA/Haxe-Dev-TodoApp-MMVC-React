@@ -1,7 +1,7 @@
 package app.view.components;
-import app.model.vos.Todo;
+import valueObject.Todo;
 import app.view.components.todolist.TodoListItem;
-import consts.actions.TodoAction;
+import enums.actions.TodoAction;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent.MediatedProps;
@@ -9,45 +9,35 @@ import core.view.MediatedComponent;
 import react.React;
 import react.ReactComponent.ReactElement;
 
-typedef TodoListState = {>State,
-	@:optional var locked:Bool;
-	@:optional var todos:Array<Todo>;
-}
-
 typedef ActionCallback = Bool->Void;
 
 class TodoList extends MediatedComponent<MediatedProps, TodoListState, Refs>
 {
-    public var onAction(null, set):Int->TodoAction->?ActionCallback->?Dynamic->Void;
-    public function set_onAction(value:Int->TodoAction->?ActionCallback->?Dynamic->Void){
-        this.onAction = value;
-        return value;
-    }
+	public var onAction(null, default):Int->TodoAction->?ActionCallback->?Dynamic->Void;
 
-	private var children:Array<ReactElement>;
+	public function setTodos(value:Array<Todo>)
+	{
+		this.setState({todos:value});
+	}
 
 	override function defaultState()
 	{
-		return {todos:[], locked:false};
+		return {todos:[]};
 	}
-
-    public function new(props:MediatedProps)
-	{
-		super(props);
-    }
 
 	override public function render()
 	{
-		var isLocked = this.state.locked;
-		children = ConstructTodoList();
-
 		return React.createElement('div', {
-			key: "todoList",
-			className: isLocked ? "todo-list-locked" : "todo-list"
-		}, children);
+			className: getClassName()
+		}, constructTodoList());
 	}
 
-	private function ConstructTodoList()
+	override public function getClassName():String
+	{
+		return "todo-list";
+	}
+
+	private function constructTodoList()
 	{
 		var result = [];
 		var index:Int = 0;
@@ -55,20 +45,19 @@ class TodoList extends MediatedComponent<MediatedProps, TodoListState, Refs>
 		{
 			result.push(React.createElement(TodoListItem, {
 				key: todo.id,
-				index: index++,
 				text: todo.text,
-				completed: todo.completed,
+				index: index++,
+				isCompleted: todo.completed,
 				actionHandler: onAction,
-//				handleUpdate: HandleUpdate
 			}));
 		}
 		return result;
 	}
-
-	private function HandleUpdate(index:Int, text:String) {
-		var todo = this.state.todos;
-		todo[index].text = text;
-		this.setState({todos: this.state.todos.copy()});
-	}
 }
+
+typedef TodoListState = {>State,
+	var todos:Array<Todo>;
+}
+
+
 

@@ -11,20 +11,18 @@ import mmvc.impl.Command;
 
 class PrepareControllerCommand extends Command
 {
-    @inject public var createTodoSignal:CreateTodoSignal;
-    @inject public var deleteTodoSignal:DeleteTodoSignal;
-    @inject public var toggleTodoSignal:ToggleTodoSignal;
-    @inject public var updateTodoSignal:UpdateTodoSignal;
+	@inject public var createTodoSignal:CreateTodoSignal;
+	@inject public var deleteTodoSignal:DeleteTodoSignal;
+	@inject public var toggleTodoSignal:ToggleTodoSignal;
+	@inject public var updateTodoSignal:UpdateTodoSignal;
 
-    override public function execute():Void
-    {
-        trace("-> execute");
+	override public function execute():Void
+	{
+		trace("-> execute");
 
-        commandMap.mapSignal( createTodoSignal,     CreateTodoCommand );
-        commandMap.mapSignal( deleteTodoSignal,     DeleteTodoCommand );
-        commandMap.mapSignal( toggleTodoSignal,     ToggleTodoCommand );
-        commandMap.mapSignal( updateTodoSignal,     UpdateTodoCommand );
-    }
-
-    public function new() { super(); }
+		commandMap.mapSignal(createTodoSignal, CreateTodoCommand);
+		commandMap.mapSignal(deleteTodoSignal, DeleteTodoCommand);
+		commandMap.mapSignal(toggleTodoSignal, ToggleTodoCommand);
+		commandMap.mapSignal(updateTodoSignal, UpdateTodoCommand);
+	}
 }

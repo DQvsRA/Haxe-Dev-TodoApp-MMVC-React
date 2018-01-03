@@ -4,71 +4,72 @@ import app.controller.signals.todoform.CreateTodoSignal;
 import app.controller.signals.TodoFormMediatorNotificationSignal;
 import app.controller.signals.TodoListMediatorNotificationSignal;
 import app.model.TodoModel;
-import app.model.vos.Todo;
-import consts.strings.MessageStrings;
+import valueObject.Todo;
+import enums.strings.MessageStrings;
 import mmvc.impl.Command;
 
 class CreateTodoCommand extends Command
 {
-    @inject public var infoPopupMediatorSignal	:InfoPopupMediatorNotificationSignal;
-    @inject public var todoListMediatorSignal	:TodoListMediatorNotificationSignal;
-    @inject public var todoFormMediatorSignal	:TodoFormMediatorNotificationSignal;
+	@inject public var infoPopupMediatorSignal:InfoPopupMediatorNotificationSignal;
+	@inject public var todoListMediatorSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoFormMediatorSignal:TodoFormMediatorNotificationSignal;
 
 	@inject public var todoModel:TodoModel;
-    @inject public var text:String;
+	@inject public var text:String;
 
-    override public function execute():Void
-    {
-        trace("-> execute : text = " + text);
+	private var createSignal(get, null):CreateTodoSignal;
+	private function get_createSignal():CreateTodoSignal{
+		return cast signal;
+	}
 
-        var isNotEmpty:Bool = text.length > 0;
-        var message:String;
+	override public function execute():Void
+	{
+		trace("-> execute : text = " + text);
 
-        if(isNotEmpty)
-        {
-            message = MessageStrings.SAVING_NEW_TODO;
-            todoModel.createTodo(text, CreateTodoCallback);
-        }
-        else
-        {
-            message = MessageStrings.EMPTY_TODO;
-            var createSignal:CreateTodoSignal = cast signal;
-            createSignal.complete.dispatch(false);
-        }
+		var isNotEmpty:Bool = text.length > 0;
+		var message:String;
 
-        infoPopupMediatorSignal.dispatch(
-            InfoPopupMediatorNotificationSignal.SHOW_INFO,
-            message
-        );
-    }
-
-    private function CreateTodoCallback(?todoVO:Todo = null):Void
-    {
-        var success:Bool = todoVO != null;
-
-        var createSignal:CreateTodoSignal = cast signal;
-        createSignal.complete.dispatch(success);
-
-        if(success)
+		if(isNotEmpty)
 		{
-            todoListMediatorSignal.dispatch(
+			message = MessageStrings.SAVING_NEW_TODO;
+			todoModel.createTodo(text, createTodoCallback);
+		}
+		else
+		{
+			message = MessageStrings.EMPTY_TODO;
+			createSignal.complete.dispatch(false);
+		}
+
+		infoPopupMediatorSignal.dispatch(
+			InfoPopupMediatorNotificationSignal.SHOW_INFO,
+			message
+		);
+	}
+
+	private function createTodoCallback(todoVO:Todo = null):Void
+	{
+		var success:Bool = todoVO != null;
+
+		if(success)
+		{
+			todoListMediatorSignal.dispatch(
 				TodoListMediatorNotificationSignal.SETUP_TODOS,
 				todoModel.getTodos()
 			);
 
-            todoFormMediatorSignal.dispatch(
+			todoFormMediatorSignal.dispatch(
 				TodoFormMediatorNotificationSignal.CLEAR_FORM,
 				null
 			);
-        }
+		}
 
-        infoPopupMediatorSignal.dispatch(
-            InfoPopupMediatorNotificationSignal.SHOW_INFO,
-            success ?
-                MessageStrings.TODO_SAVED
-            :   MessageStrings.PROBLEM_SAVING_TODO
-        );
-    }
+		infoPopupMediatorSignal.dispatch(
+			InfoPopupMediatorNotificationSignal.SHOW_INFO,
+			success
+				? MessageStrings.TODO_SAVED
+				: MessageStrings.PROBLEM_SAVING_TODO
+		);
 
-    public function new() { super(); }
+		createSignal.complete.dispatch(success);
+	}
 }

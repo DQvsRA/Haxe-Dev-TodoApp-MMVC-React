@@ -1,19 +1,19 @@
 package ;
-import js.Browser.window;
+import app.ApplicationContext;
 import app.view.components.popups.InfoPopup;
-import app.view.components.TodoList;
 import app.view.components.TodoForm;
-import react.React;
-import react.ReactDOM;
-import js.Browser.document;
+import app.view.components.TodoList;
 import core.interfaces.IApplication;
 import core.view.Component;
-import app.ApplicationContext;
+import js.Browser.document;
+import js.Browser.window;
 import mmvc.api.IViewContainer;
+import react.React;
+import react.ReactDOM;
 
 class Application extends Component<Props, State, Refs> implements IViewContainer implements IApplication
 {
-    private var _context:ApplicationContext;
+	private var _context:ApplicationContext;
 
 	public var viewAdded:Dynamic -> Void;
 	public var viewRemoved:Dynamic -> Void;
@@ -50,11 +50,9 @@ class Application extends Component<Props, State, Refs> implements IViewContaine
 				key: "application",
 				id: "app"
 			},
-			[
-				React.createElement(TodoForm, {root:this}),
-				React.createElement(TodoList, {root:this}),
-				React.createElement(InfoPopup, {root:this})
-			]
+			React.createElement(TodoForm, {root:this}),
+			React.createElement(TodoList, {root:this}),
+			React.createElement(InfoPopup, {root:this})
 		);
 	}
 

@@ -1,36 +1,15 @@
 package app.view.components.todolist;
 import app.view.components.TodoList.ActionCallback;
-import consts.actions.TodoAction;
+import enums.actions.TodoAction;
 import core.view.Component.Props;
 import core.view.Component.Refs;
 import core.view.Component.State;
+import core.view.Component;
 import react.React;
-import react.ReactComponent.ReactComponentOf;
 
-typedef TodoListItemProps = {
-	var text:String;
-	var index:Int;
-	var completed:Bool;
-
-	var actionHandler:Int->TodoAction->?ActionCallback->?Dynamic->Void;
-//	var handleUpdate:Int->String->Void;
-}
-
-typedef TodoListItemState = {>State,
-	var text:String;
-	var isEditing:Bool;
-	var isLocked:Bool;
-}
-
-class TodoListItem extends ReactComponentOf<TodoListItemProps, TodoListItemState, Refs>
+class TodoListItem extends Component<TodoListItemProps, TodoListItemState, Refs>
 {
-	private static var PROPS = {
-		key: "todoListItem",
-		className: ""
-	};
-
 	private static var PROPS_TOGGLE = {
-		key: "chbTriggerTodo",
 		type: "checkbox",
 		checked: false,
 		className: "todo-list-item-toggle",
@@ -38,7 +17,6 @@ class TodoListItem extends ReactComponentOf<TodoListItemProps, TodoListItemState
 	};
 
 	private static var PROPS_TEXT = {
-		key: "inpTodoText",
 		type: "text",
 		className: "",
 		onChange: null,
@@ -46,69 +24,82 @@ class TodoListItem extends ReactComponentOf<TodoListItemProps, TodoListItemState
 	}
 
 	private static var PROPS_BUTTON = {
-		key: "btnDeleteTodo",
 		children: "",
 		className: "todo-list-item-btn",
 		onClick: null
 	}
 
-	function new(props:TodoListItemProps)
+	override function defaultState()
 	{
-		super(props);
-		this.state = ({
+		return ({
 			text: props.text,
 			isLocked: false,
-			isEditing: false
+			isEditing: false,
+			isCompleted: props.isCompleted
 		}:TodoListItemState);
 	}
 
 	override public function render()
 	{
-		var isCompleted = this.props.completed;
-		var isLocked 	= this.state.isLocked;
-		var isEditing 	= this.state.isEditing;
-
-		PROPS_TOGGLE.checked = isCompleted;
-		PROPS_TOGGLE.onChange = HandleToggle;
-
-		PROPS_TEXT.onChange = HandleChange;
-		PROPS_TEXT.value = this.state.text;
-		PROPS_TEXT.className = "todo-list-item-input" + (isCompleted ? " completed" : "");
-
-		PROPS_BUTTON.children = isEditing ? "Update" : "Delete";
-		PROPS_BUTTON.onClick = HandleButton;
-
-		PROPS.className = "todo-list-item" + (isLocked ? " locked" : "");
-//		PROPS.onBlur = HandleLooseFocus;
-
-		return React.createElement('div', PROPS,
-		[
-			React.createElement("input", PROPS_TOGGLE),
-			React.createElement("button", PROPS_BUTTON),
-			React.createElement("input", PROPS_TEXT)
-		]);
+		return React.createElement('div',
+		{
+			key: props.key,
+			className: getClassName()
+		},
+			renderToggle(),
+			renderButton(),
+			renderTextField()
+		);
 	}
 
-//	private function HandleLooseFocus(event)
-//	{
-//		this.setState({
-//			text:this.props.text,
-//			isEditing:false
-//		});
-//	}
+	override public function shouldComponentUpdate(nextProps:TodoListItemProps, nextState:TodoListItemState):Bool
+	{
+		var shouldBeUpdated:Bool =
+			(nextProps.text != this.props.text || nextProps.isCompleted != this.props.isCompleted)
+		|| 	(	nextState.text != state.text || nextState.isLocked != state.isLocked
+			|| 	nextState.isEditing != state.isEditing || nextState.isCompleted != state.isCompleted);
 
-	private function HandleChange(event)
+		trace("Component should be updated: " + Std.string(shouldBeUpdated));
+		return shouldBeUpdated;
+	}
+
+	override public function getClassName():String
+	{
+		return "todo-list-item" + (this.state.isLocked ? " locked" : "");
+	}
+
+	private function renderButton()
+	{
+		PROPS_BUTTON.children = this.state.isEditing ? "Update" : "Delete";
+		PROPS_BUTTON.onClick = handleButton;
+		return React.createElement("button", PROPS_BUTTON);
+	}
+
+	private function renderTextField()
+	{
+		PROPS_TEXT.onChange = handleChange;
+		PROPS_TEXT.value = this.state.text;
+		PROPS_TEXT.className = "todo-list-item-input" + (this.state.isCompleted ? " completed" : "");
+		return React.createElement("input", PROPS_TEXT);
+	}
+
+	private function renderToggle()
+	{
+		PROPS_TOGGLE.checked = this.state.isCompleted;
+		PROPS_TOGGLE.onChange = handleToggle;
+		return React.createElement("input", PROPS_TOGGLE);
+	}
+
+	private function handleChange(event)
 	{
 		this.setState({
 			text: event.target.value,
-			isEditing: event.target.value != this.props.text
+			isEditing: event.target.value != this.props.text,
 		});
-//		this.props.handleUpdate(this.props.index, event.target.value);
 	}
 
-    private function HandleButton():Void
+	private function handleButton():Void
 	{
-		var actionHandler = this.props.actionHandler;
 		var index:Int = this.props.index;
 		var action:TodoAction = TodoAction.DELETE;
 		var data = null;
@@ -118,32 +109,57 @@ class TodoListItem extends ReactComponentOf<TodoListItemProps, TodoListItemState
 			data = this.state.text;
 		}
 
-		Lock();
-		actionHandler(index, action, function(success:Bool):Void {
-			UnLock();
-			this.setState({
-				isEditing:false
-			});
-		}, data);
-    }
+		lock();
 
-    private function HandleToggle(event):Void {
+		this.props.actionHandler(index, action, function(success:Bool):Void
+		{
+			if(action == TodoAction.UPDATE)
+			{
+				this.setState({
+					isEditing: false,
+					isLocked: false,
+				});
+			}
+		}, data);
+	}
+
+	private function handleToggle(event):Void
+	{
 		event.preventDefault();
-		Lock();
+
+		lock();
+
 		this.props.actionHandler(
 			this.props.index,
 			TodoAction.TOGGLE,
-			function(success:Bool):Void {
-				UnLock();
+			function(success:Bool):Void
+			{
+				this.setState({
+					isLocked: false,
+					isCompleted: !this.state.isCompleted
+				});
 			}
 		);
-    }
-
-	private function Lock():Void {
-		this.setState({isLocked:true});
 	}
 
-	private function UnLock():Void {
-		this.setState({isLocked:false});
+	private function lock():Void
+	{
+		this.setState({
+			isLocked: true,
+		});
 	}
+}
+
+typedef TodoListItemProps = {>Props,
+	var text:String;
+	var index:Int;
+	var isCompleted:Bool;
+	var actionHandler:Int->TodoAction->?ActionCallback->?Dynamic->Void;
+}
+
+typedef TodoListItemState = {>State,
+	@:optional var text:String;
+	@:optional var isEditing:Bool;
+	@:optional var isLocked:Bool;
+	@:optional var isCompleted:Bool;
 }

@@ -5,5 +5,7 @@ class ToggleTodoSignal extends Signal1<Int>{
 
     public var complete:Signal1<Bool> = new Signal1<Bool>();
 
-    public function new() { super(Int); }
+	public function new() {
+		super(Int);
+	}
 }

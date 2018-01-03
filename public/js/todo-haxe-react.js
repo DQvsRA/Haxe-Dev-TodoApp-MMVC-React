@@ -58,7 +58,7 @@ Application.prototype = $extend(core_view_Component.prototype,{
 		var tmp = React.createElement(app_view_components_TodoForm,{ root : this});
 		var tmp1 = React.createElement(app_view_components_TodoList,{ root : this});
 		var tmp2 = React.createElement(app_view_components_popups_InfoPopup,{ root : this});
-		return React.createElement("div",{ key : "application", id : "app"},[tmp,tmp1,tmp2]);
+		return React.createElement("div",{ key : "application", id : "app"},tmp,tmp1,tmp2);
 	}
 	,onViewAdded: function(view) {
 		this.viewAdded(view);
@@ -120,25 +120,6 @@ Reflect.field = function(o,field) {
 		return o[field];
 	} catch( e ) {
 		return null;
-	}
-};
-Reflect.getProperty = function(o,field) {
-	var tmp;
-	if(o == null) {
-		return null;
-	} else {
-		var tmp1;
-		if(o.__properties__) {
-			tmp = o.__properties__["get_" + field];
-			tmp1 = tmp;
-		} else {
-			tmp1 = false;
-		}
-		if(tmp1) {
-			return o[tmp]();
-		} else {
-			return o[field];
-		}
 	}
 };
 Reflect.setProperty = function(o,field,value) {
@@ -488,7 +469,7 @@ app_ApplicationContext.__name__ = ["app","ApplicationContext"];
 app_ApplicationContext.__super__ = mmvc_impl_Context;
 app_ApplicationContext.prototype = $extend(mmvc_impl_Context.prototype,{
 	startup: function() {
-		haxe_Log.trace("-> Startup",{ fileName : "ApplicationContext.hx", lineNumber : 21, className : "app.ApplicationContext", methodName : "startup"});
+		haxe_Log.trace("-> Startup",{ fileName : "ApplicationContext.hx", lineNumber : 20, className : "app.ApplicationContext", methodName : "startup"});
 		this.START_UP_SIGNAL.dispatch();
 		this.START_UP_SIGNAL = null;
 	}
@@ -550,13 +531,13 @@ app_controller_commands_prepare_PrepareCompleteCommand.prototype = $extend(mmvc_
 	execute: function() {
 		var _gthis = this;
 		haxe_Log.trace("-> execute",{ fileName : "PrepareCompleteCommand.hx", lineNumber : 17, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "execute"});
-		this.infoPopupNotificationSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,consts_strings_MessageStrings.PREPARING);
+		this.infoPopupNotificationSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,enums_strings_MessageStrings.PREPARING);
 		this.todoModel.loadTodos(function(todos) {
 			haxe_Log.trace("-> loadTodos: length = " + todos.length,{ fileName : "PrepareCompleteCommand.hx", lineNumber : 23, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "execute"});
-			var message = consts_strings_MessageStrings.FAIL_TO_LOAD_DATA;
+			var message = enums_strings_MessageStrings.FAIL_TO_LOAD_DATA;
 			if(todos != null) {
 				_gthis.todoListNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,todos);
-				message = consts_strings_MessageStrings.DATA_READY;
+				message = enums_strings_MessageStrings.DATA_READY;
 			}
 			_gthis.infoPopupNotificationSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,message);
 		});
@@ -587,12 +568,11 @@ app_controller_commands_prepare_PrepareInjectionCommand.__name__ = ["app","contr
 app_controller_commands_prepare_PrepareInjectionCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_prepare_PrepareInjectionCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "PrepareInjectionCommand.hx", lineNumber : 17, className : "app.controller.commands.prepare.PrepareInjectionCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute",{ fileName : "PrepareInjectionCommand.hx", lineNumber : 16, className : "app.controller.commands.prepare.PrepareInjectionCommand", methodName : "execute"});
 		this.injector.mapSingleton(app_controller_signals_todoform_CreateTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_ToggleTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_UpdateTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_DeleteTodoSignal);
-		this.injector.mapSingleton(app_controller_signals_ApplicationMediatorNotificationSignal);
 		this.injector.mapSingleton(app_controller_signals_InfoPopupMediatorNotificationSignal);
 		this.injector.mapSingleton(app_controller_signals_TodoListMediatorNotificationSignal);
 		this.injector.mapSingleton(app_controller_signals_TodoFormMediatorNotificationSignal);
@@ -608,8 +588,7 @@ app_controller_commands_prepare_PrepareViewCommand.__name__ = ["app","controller
 app_controller_commands_prepare_PrepareViewCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_prepare_PrepareViewCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "PrepareViewCommand.hx", lineNumber : 15, className : "app.controller.commands.prepare.PrepareViewCommand", methodName : "execute"});
-		this.mediatorMap.mapView(Application,app_view_mediators_ApplicationMediator);
+		haxe_Log.trace("-> execute",{ fileName : "PrepareViewCommand.hx", lineNumber : 14, className : "app.controller.commands.prepare.PrepareViewCommand", methodName : "execute"});
 		this.mediatorMap.mapView(app_view_components_TodoList,app_view_mediators_TodoListMediator);
 		this.mediatorMap.mapView(app_view_components_TodoForm,app_view_mediators_TodoFormMediator);
 		this.mediatorMap.mapView(app_view_components_popups_InfoPopup,app_view_mediators_InfoPopupMediator);
@@ -623,31 +602,33 @@ $hxClasses["app.controller.commands.todo.CreateTodoCommand"] = app_controller_co
 app_controller_commands_todo_CreateTodoCommand.__name__ = ["app","controller","commands","todo","CreateTodoCommand"];
 app_controller_commands_todo_CreateTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_CreateTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
-	execute: function() {
-		haxe_Log.trace("-> execute : text = " + this.text,{ fileName : "CreateTodoCommand.hx", lineNumber : 22, className : "app.controller.commands.todo.CreateTodoCommand", methodName : "execute"});
+	get_createSignal: function() {
+		return this.signal;
+	}
+	,execute: function() {
+		haxe_Log.trace("-> execute : text = " + this.text,{ fileName : "CreateTodoCommand.hx", lineNumber : 27, className : "app.controller.commands.todo.CreateTodoCommand", methodName : "execute"});
 		var isNotEmpty = this.text.length > 0;
 		var message;
 		if(isNotEmpty) {
-			message = consts_strings_MessageStrings.SAVING_NEW_TODO;
-			this.todoModel.createTodo(this.text,$bind(this,this.CreateTodoCallback));
+			message = enums_strings_MessageStrings.SAVING_NEW_TODO;
+			this.todoModel.createTodo(this.text,$bind(this,this.createTodoCallback));
 		} else {
-			message = consts_strings_MessageStrings.EMPTY_TODO;
-			var createSignal = this.signal;
-			createSignal.complete.dispatch(false);
+			message = enums_strings_MessageStrings.EMPTY_TODO;
+			this.get_createSignal().complete.dispatch(false);
 		}
 		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,message);
 	}
-	,CreateTodoCallback: function(todoVO) {
+	,createTodoCallback: function(todoVO) {
 		var success = todoVO != null;
-		var createSignal = this.signal;
-		createSignal.complete.dispatch(success);
 		if(success) {
 			this.todoListMediatorSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
 			this.todoFormMediatorSignal.dispatch(app_controller_signals_TodoFormMediatorNotificationSignal.CLEAR_FORM,null);
 		}
-		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,success ? consts_strings_MessageStrings.TODO_SAVED : consts_strings_MessageStrings.PROBLEM_SAVING_TODO);
+		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,success ? enums_strings_MessageStrings.TODO_SAVED : enums_strings_MessageStrings.PROBLEM_SAVING_TODO);
+		this.get_createSignal().complete.dispatch(success);
 	}
 	,__class__: app_controller_commands_todo_CreateTodoCommand
+	,__properties__: {get_createSignal:"get_createSignal"}
 });
 var app_controller_commands_todo_DeleteTodoCommand = function() {
 	mmvc_impl_Command.call(this);
@@ -657,15 +638,15 @@ app_controller_commands_todo_DeleteTodoCommand.__name__ = ["app","controller","c
 app_controller_commands_todo_DeleteTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_DeleteTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute: id = " + this.index,{ fileName : "DeleteTodoCommand.hx", lineNumber : 21, className : "app.controller.commands.todo.DeleteTodoCommand", methodName : "execute"});
-		this.todoModel.deleteTodo(this.index,$bind(this,this.DeleteTodoCallback));
+		haxe_Log.trace("-> execute: id = " + this.index,{ fileName : "DeleteTodoCommand.hx", lineNumber : 19, className : "app.controller.commands.todo.DeleteTodoCommand", methodName : "execute"});
+		this.todoModel.deleteTodo(this.index,$bind(this,this.deleteTodoCallback));
 	}
-	,DeleteTodoCallback: function(success) {
+	,deleteTodoCallback: function(success) {
+		this.todoListNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
+		var message = success ? enums_strings_MessageStrings.DELETE_ITEM_SUCCESS : enums_strings_MessageStrings.PROBLEM_DELETE_ITEM;
+		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,StringTools.replace(message,"%id%",Std.string(this.index + 1)));
 		var deleteSignal = this.signal;
 		deleteSignal.complete.dispatch(success);
-		this.todoListNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
-		var message = success ? consts_strings_MessageStrings.DELETE_ITEM_SUCCESS : consts_strings_MessageStrings.PROBLEM_DELETE_ITEM;
-		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,StringTools.replace(message,"%id%",Std.string(this.index + 1)));
 	}
 	,__class__: app_controller_commands_todo_DeleteTodoCommand
 });
@@ -678,15 +659,14 @@ app_controller_commands_todo_ToggleTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_ToggleTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
 		haxe_Log.trace("-> execute",{ fileName : "ToggleTodoCommand.hx", lineNumber : 21, className : "app.controller.commands.todo.ToggleTodoCommand", methodName : "execute"});
-		this.todoModel.toggleTodo(this.index,$bind(this,this.ToggleTodoCallback));
+		this.todoModel.toggleTodo(this.index,$bind(this,this.toggleTodoCallback));
 	}
-	,ToggleTodoCallback: function(success) {
+	,toggleTodoCallback: function(success) {
+		var message = success ? enums_strings_MessageStrings.TODO_COMPETE : enums_strings_MessageStrings.PROBLEM_UPDATE_TODO;
 		var todo = this.todoModel.getTodoByIndex(this.index);
+		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,StringTools.replace(StringTools.replace(message,"%id%",Std.string(this.index + 1)),"%completed%",todo.completed == null ? "null" : "" + todo.completed));
 		var toggleSignal = this.signal;
 		toggleSignal.complete.dispatch(success);
-		this.todoListNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
-		var message = success ? consts_strings_MessageStrings.TODO_COMPETE : consts_strings_MessageStrings.PROBLEM_UPDATE_TODO;
-		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,StringTools.replace(StringTools.replace(message,"%id%",Std.string(this.index + 1)),"%completed%",todo.completed == null ? "null" : "" + todo.completed));
 	}
 	,__class__: app_controller_commands_todo_ToggleTodoCommand
 });
@@ -701,16 +681,15 @@ app_controller_commands_todo_UpdateTodoCommand.prototype = $extend(mmvc_impl_Com
 		haxe_Log.trace("-> execute",{ fileName : "UpdateTodoCommand.hx", lineNumber : 21, className : "app.controller.commands.todo.UpdateTodoCommand", methodName : "execute"});
 		var isNotEmpty = this.text.length > 0;
 		if(isNotEmpty) {
-			this.todoModel.updateTodo(this.index,this.text,$bind(this,this.UpdateTodoCallback));
+			this.todoModel.updateTodo(this.index,this.text,$bind(this,this.updateTodoCallback));
 		} else {
-			this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,consts_strings_MessageStrings.TODO_CANT_BE_UPDATED);
+			this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,enums_strings_MessageStrings.TODO_CANT_BE_UPDATED);
 		}
 	}
-	,UpdateTodoCallback: function(success) {
+	,updateTodoCallback: function(success) {
 		var updateSignal = this.signal;
 		updateSignal.complete.dispatch(success);
-		this.todoListNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
-		var message = success ? consts_strings_MessageStrings.TODO_UPDATED : consts_strings_MessageStrings.PROBLEM_UPDATE_TODO;
+		var message = success ? enums_strings_MessageStrings.TODO_UPDATED : enums_strings_MessageStrings.PROBLEM_UPDATE_TODO;
 		this.infoPopupMediatorSignal.dispatch(app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO,StringTools.replace(message,"%id%",Std.string(this.index + 1)));
 	}
 	,__class__: app_controller_commands_todo_UpdateTodoCommand
@@ -829,17 +808,8 @@ msignal_Signal2.prototype = $extend(msignal_Signal.prototype,{
 	}
 	,__class__: msignal_Signal2
 });
-var app_controller_signals_ApplicationMediatorNotificationSignal = function() {
-	msignal_Signal2.call(this);
-};
-$hxClasses["app.controller.signals.ApplicationMediatorNotificationSignal"] = app_controller_signals_ApplicationMediatorNotificationSignal;
-app_controller_signals_ApplicationMediatorNotificationSignal.__name__ = ["app","controller","signals","ApplicationMediatorNotificationSignal"];
-app_controller_signals_ApplicationMediatorNotificationSignal.__super__ = msignal_Signal2;
-app_controller_signals_ApplicationMediatorNotificationSignal.prototype = $extend(msignal_Signal2.prototype,{
-	__class__: app_controller_signals_ApplicationMediatorNotificationSignal
-});
-var app_controller_signals_InfoPopupMediatorNotificationSignal = function() {
-	msignal_Signal2.call(this);
+var app_controller_signals_InfoPopupMediatorNotificationSignal = function(type1,type2) {
+	msignal_Signal2.call(this,type1,type2);
 };
 $hxClasses["app.controller.signals.InfoPopupMediatorNotificationSignal"] = app_controller_signals_InfoPopupMediatorNotificationSignal;
 app_controller_signals_InfoPopupMediatorNotificationSignal.__name__ = ["app","controller","signals","InfoPopupMediatorNotificationSignal"];
@@ -938,8 +908,8 @@ mmvc_impl_Actor.prototype = {
 	__class__: mmvc_impl_Actor
 };
 var app_model_TodoModel = function() {
-	this.SERVER_TODO_ROUTE = consts_network_ServerAPI.GATEWAY + consts_network_ServerAPI.ROUTE_TODOS;
-	this._serverService = app_model_services_ServerService.getInstance();
+	this.SERVER_TODO_ROUTE = enums_network_ServerAPI.GATEWAY + enums_network_ServerAPI.ROUTE_TODOS;
+	this._serverService = app_model_service_ServerService.getInstance();
 	this._data = [];
 	mmvc_impl_Actor.call(this);
 };
@@ -1048,7 +1018,7 @@ app_model_TodoModel.prototype = $extend(mmvc_impl_Actor.prototype,{
 			if(error != null) {
 				callback(null);
 			} else {
-				var todoVO = new app_model_vos_Todo(result.id,result.text,result.completed && result.completed != "false",result.createdAt != null ? result.createdAt : -1);
+				var todoVO = new valueObject_Todo(result.id,result.text,result.completed && result.completed != "false",result.createdAt != null ? result.createdAt : -1);
 				_gthis._data.push(todoVO);
 				callback(todoVO);
 			}
@@ -1075,7 +1045,7 @@ app_model_TodoModel.prototype = $extend(mmvc_impl_Actor.prototype,{
 				var item;
 				while(iter.hasNext()) {
 					item = iter.next();
-					_gthis._data.push(new app_model_vos_Todo(item.id,item.text,item.completed && item.completed != "false",item.createdAt != null ? item.createdAt : -1));
+					_gthis._data.push(new valueObject_Todo(item.id,item.text,item.completed && item.completed != "false",item.createdAt != null ? item.createdAt : -1));
 				}
 				callback(_gthis._data);
 			}
@@ -1083,33 +1053,38 @@ app_model_TodoModel.prototype = $extend(mmvc_impl_Actor.prototype,{
 	}
 	,__class__: app_model_TodoModel
 });
-var app_model_services_ServerService = function() {
+var app_model_service_ServerService = function() {
 };
-$hxClasses["app.model.services.ServerService"] = app_model_services_ServerService;
-app_model_services_ServerService.__name__ = ["app","model","services","ServerService"];
-app_model_services_ServerService.getInstance = function() {
-	return app_model_services_ServerService.__instance;
+$hxClasses["app.model.service.ServerService"] = app_model_service_ServerService;
+app_model_service_ServerService.__name__ = ["app","model","service","ServerService"];
+app_model_service_ServerService.getInstance = function() {
+	return app_model_service_ServerService.__instance;
 };
-app_model_services_ServerService.prototype = {
+app_model_service_ServerService.prototype = {
 	performRequest: function(endpoint,method,callback,params) {
 		var request = new yloader_valueObject_Request(endpoint);
 		var loader = new yloader_impl_js_XMLHttpRequestLoader(request);
 		request.method = method;
 		loader.onResponse = function(response) {
 			haxe_Timer.delay(function() {
-				var tmp = response.success ? null : response.statusText;
-				var tmp1 = JSON.parse(response.data);
-				callback(tmp,tmp1);
+				var resultMessage = response.success ? null : response.statusText;
+				var resultData = null;
+				try {
+					resultData = JSON.parse(response.data);
+				} catch( e ) {
+					resultMessage = app_model_service_ServerService.ERRRO_PARSING_INCOME_DATA;
+				}
+				callback(resultMessage,resultData);
 			},100 + (Math.random() * 1000 | 0));
 		};
 		if(params != null) {
-			this.AddRequestParams(request,params);
+			this.addRequestParams(request,params);
 		}
-		haxe_Log.trace("-> performRequest: " + request.url,{ fileName : "ServerService.hx", lineNumber : 38, className : "app.model.services.ServerService", methodName : "performRequest", customParams : [method,callback]});
+		haxe_Log.trace("-> performRequest: " + request.url,{ fileName : "ServerService.hx", lineNumber : 39, className : "app.model.service.ServerService", methodName : "performRequest", customParams : [method,callback]});
 		loader.withCredentials = true;
 		loader.load();
 	}
-	,AddRequestParams: function(request,params) {
+	,addRequestParams: function(request,params) {
 		var keys = params.keys();
 		var next = keys.hasNext();
 		var json = { };
@@ -1121,18 +1096,7 @@ app_model_services_ServerService.prototype = {
 		}
 		request.data = JSON.stringify(json);
 	}
-	,__class__: app_model_services_ServerService
-};
-var app_model_vos_Todo = function(id,text,completed,createdAt) {
-	this.id = id;
-	this.text = text;
-	this.completed = completed;
-	this.createdAt = createdAt;
-};
-$hxClasses["app.model.vos.Todo"] = app_model_vos_Todo;
-app_model_vos_Todo.__name__ = ["app","model","vos","Todo"];
-app_model_vos_Todo.prototype = {
-	__class__: app_model_vos_Todo
+	,__class__: app_model_service_ServerService
 };
 var core_view_MediatedComponent = function(props) {
 	core_view_Component.call(this,props);
@@ -1161,38 +1125,44 @@ app_view_components_TodoForm.__name__ = ["app","view","components","TodoForm"];
 app_view_components_TodoForm.__super__ = core_view_MediatedComponent;
 app_view_components_TodoForm.prototype = $extend(core_view_MediatedComponent.prototype,{
 	defaultState: function() {
-		return { text : "", locked : false};
+		return { text : "", isLocked : false};
 	}
 	,HandleInputOnChange: function(event) {
 		this.setState({ text : event.target.value});
 	}
 	,HandleAddTodoButtonClick: function(event) {
-		if(this.handleAddTodoButtonClick != null) {
-			this.handleAddTodoButtonClick(this.state.text);
+		if(this.addTodoButtonClickHandler != null) {
+			this.addTodoButtonClickHandler(this.state.text);
 		}
 	}
-	,HandleEnter: function(event) {
+	,handleEnter: function(event) {
 		if(event.key == "Enter") {
 			this.HandleAddTodoButtonClick(event);
 		}
 	}
 	,render: function() {
-		var isLocked = this.state.locked;
+		return React.createElement("div",{ className : this.getClassName()},this.renderInputText(),this.renderButton());
+	}
+	,getClassName: function() {
+		return "todo-form" + (this.state.isLocked ? " locked" : "");
+	}
+	,renderButton: function() {
+		app_view_components_TodoForm.PROPS_BUTTON_ADD.onClick = $bind(this,this.HandleAddTodoButtonClick);
+		app_view_components_TodoForm.PROPS_BUTTON_ADD.className = "todo-form-btn-add" + (this.state.isLocked ? " locked" : "");
+		return React.createElement("button",app_view_components_TodoForm.PROPS_BUTTON_ADD);
+	}
+	,renderInputText: function() {
 		app_view_components_TodoForm.PROPS_INPUT_TEXT.onChange = $bind(this,this.HandleInputOnChange);
 		app_view_components_TodoForm.PROPS_INPUT_TEXT.value = this.state.text;
-		app_view_components_TodoForm.PROPS_INPUT_TEXT.className = "todo-form-inp-text" + (isLocked ? " locked" : "");
-		app_view_components_TodoForm.PROPS_INPUT_TEXT.onKeyPress = $bind(this,this.HandleEnter);
-		app_view_components_TodoForm.PROPS_BUTTON_ADD.onClick = $bind(this,this.HandleAddTodoButtonClick);
-		app_view_components_TodoForm.PROPS_BUTTON_ADD.className = "todo-form-btn-add" + (isLocked ? " locked" : "");
-		var tmp = React.createElement("input",app_view_components_TodoForm.PROPS_INPUT_TEXT);
-		var tmp1 = React.createElement("button",app_view_components_TodoForm.PROPS_BUTTON_ADD);
-		return React.createElement("div",{ key : "todoForm", className : "todo-form" + (isLocked ? " locked" : "")},[tmp,tmp1]);
+		app_view_components_TodoForm.PROPS_INPUT_TEXT.className = "todo-form-inp-text" + (this.state.isLocked ? " locked" : "");
+		app_view_components_TodoForm.PROPS_INPUT_TEXT.onKeyPress = $bind(this,this.handleEnter);
+		return React.createElement("input",app_view_components_TodoForm.PROPS_INPUT_TEXT);
 	}
 	,lock: function() {
-		this.setState({ locked : true});
+		this.setState({ isLocked : true});
 	}
 	,unlock: function() {
-		this.setState({ locked : false});
+		this.setState({ isLocked : false});
 	}
 	,clear: function() {
 		this.setState({ text : ""});
@@ -1206,19 +1176,19 @@ $hxClasses["app.view.components.TodoList"] = app_view_components_TodoList;
 app_view_components_TodoList.__name__ = ["app","view","components","TodoList"];
 app_view_components_TodoList.__super__ = core_view_MediatedComponent;
 app_view_components_TodoList.prototype = $extend(core_view_MediatedComponent.prototype,{
-	set_onAction: function(value) {
-		this.onAction = value;
-		return value;
+	setTodos: function(value) {
+		this.setState({ todos : value});
 	}
 	,defaultState: function() {
-		return { todos : [], locked : false};
+		return { todos : []};
 	}
 	,render: function() {
-		var isLocked = this.state.locked;
-		this.children = this.ConstructTodoList();
-		return React.createElement("div",{ key : "todoList", className : isLocked ? "todo-list-locked" : "todo-list"},this.children);
+		return React.createElement("div",{ className : this.getClassName()},this.constructTodoList());
 	}
-	,ConstructTodoList: function() {
+	,getClassName: function() {
+		return "todo-list";
+	}
+	,constructTodoList: function() {
 		var result = [];
 		var index = 0;
 		var _g = 0;
@@ -1226,108 +1196,133 @@ app_view_components_TodoList.prototype = $extend(core_view_MediatedComponent.pro
 		while(_g < _g1.length) {
 			var todo = _g1[_g];
 			++_g;
-			result.push(React.createElement(app_view_components_todolist_TodoListItem,{ key : todo.id, index : index++, text : todo.text, completed : todo.completed, actionHandler : this.onAction}));
+			result.push(React.createElement(app_view_components_todolist_TodoListItem,{ key : todo.id, text : todo.text, index : index++, isCompleted : todo.completed, actionHandler : this.onAction}));
 		}
 		return result;
 	}
-	,HandleUpdate: function(index,text) {
-		var todo = this.state.todos;
-		todo[index].text = text;
-		this.setState({ todos : this.state.todos.slice()});
-	}
 	,__class__: app_view_components_TodoList
-	,__properties__: {set_onAction:"set_onAction"}
 });
 var app_view_components_popups_InfoPopup = function(props) {
+	this.message = "";
 	core_view_MediatedComponent.call(this,props);
 };
 $hxClasses["app.view.components.popups.InfoPopup"] = app_view_components_popups_InfoPopup;
 app_view_components_popups_InfoPopup.__name__ = ["app","view","components","popups","InfoPopup"];
 app_view_components_popups_InfoPopup.__super__ = core_view_MediatedComponent;
 app_view_components_popups_InfoPopup.prototype = $extend(core_view_MediatedComponent.prototype,{
-	defaultState: function() {
-		return { message : "", active : false};
+	set_message: function(value) {
+		if(this.message != value) {
+			this.message = value;
+			this.setState({ message : value});
+		}
+		return value;
+	}
+	,defaultState: function() {
+		return { message : this.message};
 	}
 	,render: function() {
 		var _gthis = this;
-		return React.createElement("div",{ key : app_view_components_popups_InfoPopup.ID, className : "popup-info", ref : function(dom) {
+		return React.createElement("div",{ key : app_view_components_popups_InfoPopup.ID, className : this.getClassName(), onAnimationEnd : $bind(this,this.onAnimationEnd), ref : function(dom) {
 			_gthis.domInfoPopup = dom;
 		}, children : this.state.message});
 	}
-	,componentDidUpdate: function(props,state) {
+	,isActive: function() {
+		return this.state.message.length > 0;
+	}
+	,getClassName: function() {
+		return "popup-info";
+	}
+	,componentDidUpdate: function(prevProps,prevState) {
 		var _gthis = this;
-		if(this.state.active) {
+		if(this.isActive()) {
+			this.domInfoPopup.addEventListener("animationend",$bind(this,this.handlerAnimationEnd),false);
 			haxe_Timer.delay(function() {
 				_gthis.domInfoPopup.classList.add(app_view_components_popups_InfoPopup.ANIMATION_CLASS_NAME);
 			},0);
-			this.domInfoPopup.addEventListener("animationend",$bind(this,this.HandlerAnimationEnd),false);
 		}
 	}
 	,componentWillUnmount: function() {
-		this.domInfoPopup.removeEventListener("animationend",$bind(this,this.HandlerAnimationEnd));
+		this.domInfoPopup.removeEventListener("animationend",$bind(this,this.handlerAnimationEnd));
+		core_view_MediatedComponent.prototype.componentWillUnmount.call(this);
 	}
-	,HandlerAnimationEnd: function() {
+	,handlerAnimationEnd: function() {
 		this.domInfoPopup.classList.remove(app_view_components_popups_InfoPopup.ANIMATION_CLASS_NAME);
 		if(this.handleAnimationComplete != null) {
 			this.handleAnimationComplete();
 		}
 	}
+	,onAnimationEnd: function() {
+		haxe_Log.trace("ontransition end",{ fileName : "InfoPopup.hx", lineNumber : 82, className : "app.view.components.popups.InfoPopup", methodName : "onAnimationEnd"});
+	}
 	,__class__: app_view_components_popups_InfoPopup
+	,__properties__: {set_message:"set_message"}
 });
 var app_view_components_todolist_TodoListItem = function(props) {
-	React.Component.call(this,props);
-	this.state = { text : props.text, isLocked : false, isEditing : false};
+	core_view_Component.call(this,props);
 };
 $hxClasses["app.view.components.todolist.TodoListItem"] = app_view_components_todolist_TodoListItem;
 app_view_components_todolist_TodoListItem.__name__ = ["app","view","components","todolist","TodoListItem"];
-app_view_components_todolist_TodoListItem.__super__ = React.Component;
-app_view_components_todolist_TodoListItem.prototype = $extend(React.Component.prototype,{
-	render: function() {
-		var isCompleted = this.props.completed;
-		var isLocked = this.state.isLocked;
-		var isEditing = this.state.isEditing;
-		app_view_components_todolist_TodoListItem.PROPS_TOGGLE.checked = isCompleted;
-		app_view_components_todolist_TodoListItem.PROPS_TOGGLE.onChange = $bind(this,this.HandleToggle);
-		app_view_components_todolist_TodoListItem.PROPS_TEXT.onChange = $bind(this,this.HandleChange);
-		app_view_components_todolist_TodoListItem.PROPS_TEXT.value = this.state.text;
-		app_view_components_todolist_TodoListItem.PROPS_TEXT.className = "todo-list-item-input" + (isCompleted ? " completed" : "");
-		app_view_components_todolist_TodoListItem.PROPS_BUTTON.children = isEditing ? "Update" : "Delete";
-		app_view_components_todolist_TodoListItem.PROPS_BUTTON.onClick = $bind(this,this.HandleButton);
-		app_view_components_todolist_TodoListItem.PROPS.className = "todo-list-item" + (isLocked ? " locked" : "");
-		return React.createElement("div",app_view_components_todolist_TodoListItem.PROPS,[React.createElement("input",app_view_components_todolist_TodoListItem.PROPS_TOGGLE),React.createElement("button",app_view_components_todolist_TodoListItem.PROPS_BUTTON),React.createElement("input",app_view_components_todolist_TodoListItem.PROPS_TEXT)]);
+app_view_components_todolist_TodoListItem.__super__ = core_view_Component;
+app_view_components_todolist_TodoListItem.prototype = $extend(core_view_Component.prototype,{
+	defaultState: function() {
+		return { text : this.props.text, isLocked : false, isEditing : false, isCompleted : this.props.isCompleted};
 	}
-	,HandleChange: function(event) {
+	,render: function() {
+		return React.createElement("div",{ key : this.props.key, className : this.getClassName()},this.renderToggle(),this.renderButton(),this.renderTextField());
+	}
+	,shouldComponentUpdate: function(nextProps,nextState) {
+		var shouldBeUpdated = nextProps.text != this.props.text || nextProps.isCompleted != this.props.isCompleted || (nextState.text != this.state.text || nextState.isLocked != this.state.isLocked || nextState.isEditing != this.state.isEditing || nextState.isCompleted != this.state.isCompleted);
+		haxe_Log.trace("Component should be updated: " + (shouldBeUpdated == null ? "null" : "" + shouldBeUpdated),{ fileName : "TodoListItem.hx", lineNumber : 62, className : "app.view.components.todolist.TodoListItem", methodName : "shouldComponentUpdate"});
+		return shouldBeUpdated;
+	}
+	,getClassName: function() {
+		return "todo-list-item" + (this.state.isLocked ? " locked" : "");
+	}
+	,renderButton: function() {
+		app_view_components_todolist_TodoListItem.PROPS_BUTTON.children = this.state.isEditing ? "Update" : "Delete";
+		app_view_components_todolist_TodoListItem.PROPS_BUTTON.onClick = $bind(this,this.handleButton);
+		return React.createElement("button",app_view_components_todolist_TodoListItem.PROPS_BUTTON);
+	}
+	,renderTextField: function() {
+		app_view_components_todolist_TodoListItem.PROPS_TEXT.onChange = $bind(this,this.handleChange);
+		app_view_components_todolist_TodoListItem.PROPS_TEXT.value = this.state.text;
+		app_view_components_todolist_TodoListItem.PROPS_TEXT.className = "todo-list-item-input" + (this.state.isCompleted ? " completed" : "");
+		return React.createElement("input",app_view_components_todolist_TodoListItem.PROPS_TEXT);
+	}
+	,renderToggle: function() {
+		app_view_components_todolist_TodoListItem.PROPS_TOGGLE.checked = this.state.isCompleted;
+		app_view_components_todolist_TodoListItem.PROPS_TOGGLE.onChange = $bind(this,this.handleToggle);
+		return React.createElement("input",app_view_components_todolist_TodoListItem.PROPS_TOGGLE);
+	}
+	,handleChange: function(event) {
 		this.setState({ text : event.target.value, isEditing : event.target.value != this.props.text});
 	}
-	,HandleButton: function() {
+	,handleButton: function() {
 		var _gthis = this;
-		var actionHandler = this.props.actionHandler;
 		var index = this.props.index;
-		var action = consts_actions_TodoAction.DELETE;
+		var action = enums_actions_TodoAction.DELETE;
 		var data = null;
 		if(this.state.isEditing) {
-			action = consts_actions_TodoAction.UPDATE;
+			action = enums_actions_TodoAction.UPDATE;
 			data = this.state.text;
 		}
-		this.Lock();
-		actionHandler(index,action,function(success) {
-			_gthis.UnLock();
-			_gthis.setState({ isEditing : false});
+		this.lock();
+		this.props.actionHandler(index,action,function(success) {
+			if(action == enums_actions_TodoAction.UPDATE) {
+				_gthis.setState({ isEditing : false, isLocked : false});
+			}
 		},data);
 	}
-	,HandleToggle: function(event) {
+	,handleToggle: function(event) {
 		var _gthis = this;
 		event.preventDefault();
-		this.Lock();
-		this.props.actionHandler(this.props.index,consts_actions_TodoAction.TOGGLE,function(success) {
-			_gthis.UnLock();
+		this.lock();
+		this.props.actionHandler(this.props.index,enums_actions_TodoAction.TOGGLE,function(success) {
+			_gthis.setState({ isLocked : false, isCompleted : !_gthis.state.isCompleted});
 		});
 	}
-	,Lock: function() {
+	,lock: function() {
 		this.setState({ isLocked : true});
-	}
-	,UnLock: function() {
-		this.setState({ isLocked : false});
 	}
 	,__class__: app_view_components_todolist_TodoListItem
 });
@@ -1383,25 +1378,6 @@ mmvc_impl_Mediator.__super__ = mmvc_base_MediatorBase;
 mmvc_impl_Mediator.prototype = $extend(mmvc_base_MediatorBase.prototype,{
 	__class__: mmvc_impl_Mediator
 });
-var app_view_mediators_ApplicationMediator = function() {
-	mmvc_impl_Mediator.call(this);
-};
-$hxClasses["app.view.mediators.ApplicationMediator"] = app_view_mediators_ApplicationMediator;
-app_view_mediators_ApplicationMediator.__name__ = ["app","view","mediators","ApplicationMediator"];
-app_view_mediators_ApplicationMediator.__super__ = mmvc_impl_Mediator;
-app_view_mediators_ApplicationMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
-	onRegister: function() {
-		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.applicationNotificatyionsSignal.add($bind(this,this.HandleNotification));
-	}
-	,HandleNotification: function(type,data) {
-		var tmp = type == app_controller_signals_ApplicationMediatorNotificationSignal.NOTIFICATION;
-	}
-	,onRemove: function() {
-		mmvc_impl_Mediator.prototype.onRemove.call(this);
-	}
-	,__class__: app_view_mediators_ApplicationMediator
-});
 var app_view_mediators_InfoPopupMediator = function() {
 	this._messageStack = [];
 	mmvc_impl_Mediator.call(this);
@@ -1412,27 +1388,23 @@ app_view_mediators_InfoPopupMediator.__super__ = mmvc_impl_Mediator;
 app_view_mediators_InfoPopupMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.notificationsSignal.add($bind(this,this.HandleNotification));
-		var infoPopup = this.getViewComponent();
-		infoPopup.handleAnimationComplete = $bind(this,this.HandleAnimationComplete);
+		this.notificationsSignal.add($bind(this,this.handleNotification));
+		this.view.handleAnimationComplete = $bind(this,this.handleAnimationComplete);
 	}
-	,HandleAnimationComplete: function() {
-		haxe_Log.trace("handleAnimationComplete: messages = " + this._messageStack.length,{ fileName : "InfoPopupMediator.hx", lineNumber : 24, className : "app.view.mediators.InfoPopupMediator", methodName : "HandleAnimationComplete"});
-		var infoPopup = this.getViewComponent();
-		var state = { message : "", active : false};
+	,handleAnimationComplete: function() {
+		haxe_Log.trace("handleAnimationComplete: messages = " + this._messageStack.length,{ fileName : "InfoPopupMediator.hx", lineNumber : 23, className : "app.view.mediators.InfoPopupMediator", methodName : "handleAnimationComplete"});
+		var message = "";
 		if(this._messageStack.length > 0) {
-			state.message = Std.string(this._messageStack.shift());
-			state.active = true;
+			message = Std.string(this._messageStack.shift());
 		}
-		infoPopup.setState(state);
+		this.view.set_message(message);
 	}
-	,HandleNotification: function(type,data) {
+	,handleNotification: function(type,data) {
 		if(type == app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO) {
-			var infoPopup = this.getViewComponent();
-			if(infoPopup.state.active) {
+			if(this.view.isActive()) {
 				this._messageStack.push(Std.string(data));
 			} else {
-				infoPopup.setState({ message : data, active : true});
+				this.view.set_message(Std.string(data));
 			}
 		}
 	}
@@ -1447,21 +1419,19 @@ app_view_mediators_TodoFormMediator.__super__ = mmvc_impl_Mediator;
 app_view_mediators_TodoFormMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.notificationsSignal.add($bind(this,this.HandleNotification));
-		var todoForm = this.getViewComponent();
-		todoForm.handleAddTodoButtonClick = $bind(this,this.HandleAddTodo);
+		this.notificationsSignal.add($bind(this,this.handleNotification));
+		this.view.addTodoButtonClickHandler = $bind(this,this.handleAddTodo);
 	}
-	,HandleNotification: function(type,data) {
+	,handleNotification: function(type,data) {
 		if(type == app_controller_signals_TodoFormMediatorNotificationSignal.CLEAR_FORM) {
-			var todoForm = this.getViewComponent();
-			todoForm.clear();
+			this.view.clear();
 		}
 	}
-	,HandleAddTodo: function(text) {
-		var todoForm = this.getViewComponent();
-		todoForm.lock();
+	,handleAddTodo: function(text) {
+		var _gthis = this;
+		this.view.lock();
 		this.createTodoSignal.complete.addOnce(function(success) {
-			todoForm.unlock();
+			_gthis.view.unlock();
 		});
 		this.createTodoSignal.dispatch(text);
 	}
@@ -1476,12 +1446,11 @@ app_view_mediators_TodoListMediator.__super__ = mmvc_impl_Mediator;
 app_view_mediators_TodoListMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.notificationSignal.add($bind(this,this.HandleNotification));
-		var todoList = this.getViewComponent();
-		todoList.set_onAction($bind(this,this.HandleTodoListAction));
+		this.mediate(this.notificationSignal.add($bind(this,this.handleNotification)));
+		this.view.onAction = $bind(this,this.handleTodoListAction);
 	}
-	,HandleTodoListAction: function(index,action,callback,data) {
-		haxe_Log.trace(index + ":" + Std.string(action) + ":" + Std.string(callback),{ fileName : "TodoListMediator.hx", lineNumber : 31, className : "app.view.mediators.TodoListMediator", methodName : "HandleTodoListAction"});
+	,handleTodoListAction: function(index,action,callback,data) {
+		haxe_Log.trace(index + ":" + Std.string(action) + ":" + Std.string(callback),{ fileName : "TodoListMediator.hx", lineNumber : 30, className : "app.view.mediators.TodoListMediator", methodName : "handleTodoListAction"});
 		switch(action[1]) {
 		case 0:
 			if(callback != null) {
@@ -1504,31 +1473,30 @@ app_view_mediators_TodoListMediator.prototype = $extend(mmvc_impl_Mediator.proto
 			break;
 		}
 	}
-	,HandleNotification: function(type,data) {
-		haxe_Log.trace("> HandleNotification: type = " + type,{ fileName : "TodoListMediator.hx", lineNumber : 58, className : "app.view.mediators.TodoListMediator", methodName : "HandleNotification"});
+	,handleNotification: function(type,data) {
+		haxe_Log.trace("> HandleNotification: type = " + type,{ fileName : "TodoListMediator.hx", lineNumber : 51, className : "app.view.mediators.TodoListMediator", methodName : "handleNotification"});
 		if(type == app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS) {
-			var todoList = this.getViewComponent();
-			todoList.setState({ todos : data});
+			this.view.setTodos(data);
 		}
 	}
 	,__class__: app_view_mediators_TodoListMediator
 });
-var consts_actions_TodoAction = { __ename__ : true, __constructs__ : ["TOGGLE","UPDATE","DELETE"] };
-consts_actions_TodoAction.TOGGLE = ["TOGGLE",0];
-consts_actions_TodoAction.TOGGLE.toString = $estr;
-consts_actions_TodoAction.TOGGLE.__enum__ = consts_actions_TodoAction;
-consts_actions_TodoAction.UPDATE = ["UPDATE",1];
-consts_actions_TodoAction.UPDATE.toString = $estr;
-consts_actions_TodoAction.UPDATE.__enum__ = consts_actions_TodoAction;
-consts_actions_TodoAction.DELETE = ["DELETE",2];
-consts_actions_TodoAction.DELETE.toString = $estr;
-consts_actions_TodoAction.DELETE.__enum__ = consts_actions_TodoAction;
-var consts_network_ServerAPI = function() { };
-$hxClasses["consts.network.ServerAPI"] = consts_network_ServerAPI;
-consts_network_ServerAPI.__name__ = ["consts","network","ServerAPI"];
-var consts_strings_MessageStrings = function() { };
-$hxClasses["consts.strings.MessageStrings"] = consts_strings_MessageStrings;
-consts_strings_MessageStrings.__name__ = ["consts","strings","MessageStrings"];
+var enums_actions_TodoAction = { __ename__ : true, __constructs__ : ["TOGGLE","UPDATE","DELETE"] };
+enums_actions_TodoAction.TOGGLE = ["TOGGLE",0];
+enums_actions_TodoAction.TOGGLE.toString = $estr;
+enums_actions_TodoAction.TOGGLE.__enum__ = enums_actions_TodoAction;
+enums_actions_TodoAction.UPDATE = ["UPDATE",1];
+enums_actions_TodoAction.UPDATE.toString = $estr;
+enums_actions_TodoAction.UPDATE.__enum__ = enums_actions_TodoAction;
+enums_actions_TodoAction.DELETE = ["DELETE",2];
+enums_actions_TodoAction.DELETE.toString = $estr;
+enums_actions_TodoAction.DELETE.__enum__ = enums_actions_TodoAction;
+var enums_network_ServerAPI = function() { };
+$hxClasses["enums.network.ServerAPI"] = enums_network_ServerAPI;
+enums_network_ServerAPI.__name__ = ["enums","network","ServerAPI"];
+var enums_strings_MessageStrings = function() { };
+$hxClasses["enums.strings.MessageStrings"] = enums_strings_MessageStrings;
+enums_strings_MessageStrings.__name__ = ["enums","strings","MessageStrings"];
 var haxe_IMap = function() { };
 $hxClasses["haxe.IMap"] = haxe_IMap;
 haxe_IMap.__name__ = ["haxe","IMap"];
@@ -3590,1292 +3558,6 @@ mmvc_impl_TriggerCommand.prototype = {
 	}
 	,__class__: mmvc_impl_TriggerCommand
 };
-var motion_actuators_IGenericActuator = function() { };
-$hxClasses["motion.actuators.IGenericActuator"] = motion_actuators_IGenericActuator;
-motion_actuators_IGenericActuator.__name__ = ["motion","actuators","IGenericActuator"];
-motion_actuators_IGenericActuator.prototype = {
-	__class__: motion_actuators_IGenericActuator
-};
-var motion_actuators_GenericActuator = function(target,duration,properties) {
-	this._autoVisible = true;
-	this._delay = 0;
-	this._reflect = false;
-	this._repeat = 0;
-	this._reverse = false;
-	this._smartRotation = false;
-	this._snapping = false;
-	this.special = false;
-	this.target = target;
-	this.properties = properties;
-	this.duration = duration;
-	this._ease = motion_Actuate.defaultEase;
-};
-$hxClasses["motion.actuators.GenericActuator"] = motion_actuators_GenericActuator;
-motion_actuators_GenericActuator.__name__ = ["motion","actuators","GenericActuator"];
-motion_actuators_GenericActuator.__interfaces__ = [motion_actuators_IGenericActuator];
-motion_actuators_GenericActuator.prototype = {
-	apply: function() {
-		var _g = 0;
-		var _g1 = Reflect.fields(this.properties);
-		while(_g < _g1.length) {
-			var i = _g1[_g];
-			++_g;
-			if(Object.prototype.hasOwnProperty.call(this.target,i)) {
-				this.target[i] = Reflect.field(this.properties,i);
-			} else {
-				Reflect.setProperty(this.target,i,Reflect.field(this.properties,i));
-			}
-		}
-	}
-	,autoVisible: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._autoVisible = value;
-		return this;
-	}
-	,callMethod: function(method,params) {
-		if(params == null) {
-			params = [];
-		}
-		return method.apply(method,params);
-	}
-	,change: function() {
-		if(this._onUpdate != null) {
-			var method = this._onUpdate;
-			var params = this._onUpdateParams;
-			if(params == null) {
-				params = [];
-			}
-			method.apply(method,params);
-		}
-	}
-	,complete: function(sendEvent) {
-		if(sendEvent == null) {
-			sendEvent = true;
-		}
-		if(sendEvent) {
-			this.change();
-			if(this._onComplete != null) {
-				var method = this._onComplete;
-				var params = this._onCompleteParams;
-				if(params == null) {
-					params = [];
-				}
-				method.apply(method,params);
-			}
-		}
-		motion_Actuate.unload(this);
-	}
-	,delay: function(duration) {
-		this._delay = duration;
-		return this;
-	}
-	,ease: function(easing) {
-		this._ease = easing;
-		return this;
-	}
-	,move: function() {
-	}
-	,onComplete: function(handler,parameters) {
-		this._onComplete = handler;
-		if(parameters == null) {
-			this._onCompleteParams = [];
-		} else {
-			this._onCompleteParams = parameters;
-		}
-		if(this.duration == 0) {
-			this.complete();
-		}
-		return this;
-	}
-	,onRepeat: function(handler,parameters) {
-		this._onRepeat = handler;
-		if(parameters == null) {
-			this._onRepeatParams = [];
-		} else {
-			this._onRepeatParams = parameters;
-		}
-		return this;
-	}
-	,onUpdate: function(handler,parameters) {
-		this._onUpdate = handler;
-		if(parameters == null) {
-			this._onUpdateParams = [];
-		} else {
-			this._onUpdateParams = parameters;
-		}
-		return this;
-	}
-	,onPause: function(handler,parameters) {
-		this._onPause = handler;
-		if(parameters == null) {
-			this._onPauseParams = [];
-		} else {
-			this._onPauseParams = parameters;
-		}
-		return this;
-	}
-	,onResume: function(handler,parameters) {
-		this._onResume = handler;
-		if(parameters == null) {
-			this._onResumeParams = [];
-		} else {
-			this._onResumeParams = parameters;
-		}
-		return this;
-	}
-	,pause: function() {
-		if(this._onPause != null) {
-			var method = this._onPause;
-			var params = this._onPauseParams;
-			if(params == null) {
-				params = [];
-			}
-			method.apply(method,params);
-		}
-	}
-	,reflect: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._reflect = value;
-		this.special = true;
-		return this;
-	}
-	,repeat: function(times) {
-		if(times == null) {
-			times = -1;
-		}
-		this._repeat = times;
-		return this;
-	}
-	,resume: function() {
-		if(this._onResume != null) {
-			var method = this._onResume;
-			var params = this._onResumeParams;
-			if(params == null) {
-				params = [];
-			}
-			method.apply(method,params);
-		}
-	}
-	,reverse: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._reverse = value;
-		this.special = true;
-		return this;
-	}
-	,smartRotation: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._smartRotation = value;
-		this.special = true;
-		return this;
-	}
-	,snapping: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._snapping = value;
-		this.special = true;
-		return this;
-	}
-	,stop: function(properties,complete,sendEvent) {
-	}
-	,__class__: motion_actuators_GenericActuator
-};
-var motion_actuators_SimpleActuator = function(target,duration,properties) {
-	this.active = true;
-	this.propertyDetails = [];
-	this.sendChange = false;
-	this.paused = false;
-	this.cacheVisible = false;
-	this.initialized = false;
-	this.setVisible = false;
-	this.toggleVisible = false;
-	this.startTime = new Date().getTime() / 1000;
-	motion_actuators_GenericActuator.call(this,target,duration,properties);
-	if(!motion_actuators_SimpleActuator.addedEvent) {
-		motion_actuators_SimpleActuator.addedEvent = true;
-		motion_actuators_SimpleActuator.timer = new haxe_Timer(33);
-		motion_actuators_SimpleActuator.timer.run = motion_actuators_SimpleActuator.stage_onEnterFrame;
-	}
-};
-$hxClasses["motion.actuators.SimpleActuator"] = motion_actuators_SimpleActuator;
-motion_actuators_SimpleActuator.__name__ = ["motion","actuators","SimpleActuator"];
-motion_actuators_SimpleActuator.stage_onEnterFrame = function() {
-	var currentTime = new Date().getTime() / 1000;
-	var actuator;
-	var j = 0;
-	var cleanup = false;
-	var _g1 = 0;
-	var _g = motion_actuators_SimpleActuator.actuatorsLength;
-	while(_g1 < _g) {
-		var i = _g1++;
-		actuator = motion_actuators_SimpleActuator.actuators[j];
-		if(actuator != null && actuator.active) {
-			if(currentTime >= actuator.timeOffset) {
-				actuator.update(currentTime);
-			}
-			++j;
-		} else {
-			motion_actuators_SimpleActuator.actuators.splice(j,1);
-			--motion_actuators_SimpleActuator.actuatorsLength;
-		}
-	}
-};
-motion_actuators_SimpleActuator.__super__ = motion_actuators_GenericActuator;
-motion_actuators_SimpleActuator.prototype = $extend(motion_actuators_GenericActuator.prototype,{
-	setField_motion_actuators_MotionPathActuator_T: function(target,propertyName,value) {
-		if(Object.prototype.hasOwnProperty.call(target,propertyName)) {
-			target[propertyName] = value;
-		} else {
-			Reflect.setProperty(target,propertyName,value);
-		}
-	}
-	,setField_motion_actuators_SimpleActuator_T: function(target,propertyName,value) {
-		if(Object.prototype.hasOwnProperty.call(target,propertyName)) {
-			target[propertyName] = value;
-		} else {
-			Reflect.setProperty(target,propertyName,value);
-		}
-	}
-	,autoVisible: function(value) {
-		if(value == null) {
-			value = true;
-		}
-		this._autoVisible = value;
-		if(!value) {
-			this.toggleVisible = false;
-			if(this.setVisible) {
-				var target = this.target;
-				var value1 = this.cacheVisible;
-				if(Object.prototype.hasOwnProperty.call(target,"visible")) {
-					target["visible"] = value1;
-				} else {
-					Reflect.setProperty(target,"visible",value1);
-				}
-			}
-		}
-		return this;
-	}
-	,delay: function(duration) {
-		this._delay = duration;
-		this.timeOffset = this.startTime + duration;
-		return this;
-	}
-	,getField: function(target,propertyName) {
-		var value = null;
-		if(Object.prototype.hasOwnProperty.call(target,propertyName)) {
-			value = Reflect.field(target,propertyName);
-		} else {
-			value = Reflect.getProperty(target,propertyName);
-		}
-		return value;
-	}
-	,initialize: function() {
-		var details;
-		var start;
-		var _g = 0;
-		var _g1 = Reflect.fields(this.properties);
-		while(_g < _g1.length) {
-			var i = _g1[_g];
-			++_g;
-			var isField = true;
-			if(Object.prototype.hasOwnProperty.call(this.target,i)) {
-				start = Reflect.field(this.target,i);
-			} else {
-				isField = false;
-				start = Reflect.getProperty(this.target,i);
-			}
-			if(typeof(start) == "number") {
-				var target = this.properties;
-				var value = null;
-				if(Object.prototype.hasOwnProperty.call(target,i)) {
-					value = Reflect.field(target,i);
-				} else {
-					value = Reflect.getProperty(target,i);
-				}
-				var value1 = value;
-				if(start == null) {
-					start = 0;
-				}
-				if(value1 == null) {
-					value1 = 0;
-				}
-				details = new motion_actuators_PropertyDetails(this.target,i,start,value1 - start,isField);
-				this.propertyDetails.push(details);
-			}
-		}
-		this.detailsLength = this.propertyDetails.length;
-		this.initialized = true;
-	}
-	,move: function() {
-		this.toggleVisible = Object.prototype.hasOwnProperty.call(this.properties,"alpha") && Object.prototype.hasOwnProperty.call(this.properties,"visible");
-		var tmp;
-		if(this.toggleVisible && this.properties.alpha != 0) {
-			var target = this.target;
-			var value = null;
-			if(Object.prototype.hasOwnProperty.call(target,"visible")) {
-				value = Reflect.field(target,"visible");
-			} else {
-				value = Reflect.getProperty(target,"visible");
-			}
-			tmp = !value;
-		} else {
-			tmp = false;
-		}
-		if(tmp) {
-			this.setVisible = true;
-			var target1 = this.target;
-			var value1 = null;
-			if(Object.prototype.hasOwnProperty.call(target1,"visible")) {
-				value1 = Reflect.field(target1,"visible");
-			} else {
-				value1 = Reflect.getProperty(target1,"visible");
-			}
-			this.cacheVisible = value1;
-			var target2 = this.target;
-			if(Object.prototype.hasOwnProperty.call(target2,"visible")) {
-				target2["visible"] = true;
-			} else {
-				Reflect.setProperty(target2,"visible",true);
-			}
-		}
-		this.timeOffset = this.startTime;
-		motion_actuators_SimpleActuator.actuators.push(this);
-		++motion_actuators_SimpleActuator.actuatorsLength;
-	}
-	,onUpdate: function(handler,parameters) {
-		this._onUpdate = handler;
-		if(parameters == null) {
-			this._onUpdateParams = [];
-		} else {
-			this._onUpdateParams = parameters;
-		}
-		this.sendChange = true;
-		return this;
-	}
-	,pause: function() {
-		if(!this.paused) {
-			this.paused = true;
-			motion_actuators_GenericActuator.prototype.pause.call(this);
-			this.pauseTime = new Date().getTime() / 1000;
-		}
-	}
-	,resume: function() {
-		if(this.paused) {
-			this.paused = false;
-			this.timeOffset += new Date().getTime() / 1000 - this.pauseTime;
-			motion_actuators_GenericActuator.prototype.resume.call(this);
-		}
-	}
-	,setProperty: function(details,value) {
-		if(details.isField) {
-			details.target[details.propertyName] = value;
-		} else {
-			Reflect.setProperty(details.target,details.propertyName,value);
-		}
-	}
-	,stop: function(properties,complete,sendEvent) {
-		if(this.active) {
-			if(properties == null) {
-				this.active = false;
-				if(complete) {
-					this.apply();
-				}
-				this.complete(sendEvent);
-				return;
-			}
-			var _g = 0;
-			var _g1 = Reflect.fields(properties);
-			while(_g < _g1.length) {
-				var i = _g1[_g];
-				++_g;
-				if(Object.prototype.hasOwnProperty.call(this.properties,i)) {
-					this.active = false;
-					if(complete) {
-						this.apply();
-					}
-					this.complete(sendEvent);
-					return;
-				}
-			}
-		}
-	}
-	,update: function(currentTime) {
-		if(!this.paused) {
-			var details;
-			var easing;
-			var i;
-			var tweenPosition = (currentTime - this.timeOffset) / this.duration;
-			if(tweenPosition > 1) {
-				tweenPosition = 1;
-			}
-			if(!this.initialized) {
-				this.initialize();
-			}
-			if(!this.special) {
-				easing = this._ease.calculate(tweenPosition);
-				var _g1 = 0;
-				var _g = this.detailsLength;
-				while(_g1 < _g) {
-					var i1 = _g1++;
-					details = this.propertyDetails[i1];
-					var value = details.start + details.change * easing;
-					if(details.isField) {
-						details.target[details.propertyName] = value;
-					} else {
-						Reflect.setProperty(details.target,details.propertyName,value);
-					}
-				}
-			} else {
-				if(!this._reverse) {
-					easing = this._ease.calculate(tweenPosition);
-				} else {
-					easing = this._ease.calculate(1 - tweenPosition);
-				}
-				var endValue;
-				var _g11 = 0;
-				var _g2 = this.detailsLength;
-				while(_g11 < _g2) {
-					var i2 = _g11++;
-					details = this.propertyDetails[i2];
-					if(this._smartRotation && (details.propertyName == "rotation" || details.propertyName == "rotationX" || details.propertyName == "rotationY" || details.propertyName == "rotationZ")) {
-						var rotation = details.change % 360;
-						if(rotation > 180) {
-							rotation -= 360;
-						} else if(rotation < -180) {
-							rotation += 360;
-						}
-						endValue = details.start + rotation * easing;
-					} else {
-						endValue = details.start + details.change * easing;
-					}
-					if(!this._snapping) {
-						if(details.isField) {
-							details.target[details.propertyName] = endValue;
-						} else {
-							Reflect.setProperty(details.target,details.propertyName,endValue);
-						}
-					} else {
-						var value1 = Math.round(endValue);
-						if(details.isField) {
-							details.target[details.propertyName] = value1;
-						} else {
-							Reflect.setProperty(details.target,details.propertyName,value1);
-						}
-					}
-				}
-			}
-			if(tweenPosition == 1) {
-				if(this._repeat == 0) {
-					this.active = false;
-					var tmp;
-					if(this.toggleVisible) {
-						var target = this.target;
-						var value2 = null;
-						if(Object.prototype.hasOwnProperty.call(target,"alpha")) {
-							value2 = Reflect.field(target,"alpha");
-						} else {
-							value2 = Reflect.getProperty(target,"alpha");
-						}
-						tmp = value2 == 0;
-					} else {
-						tmp = false;
-					}
-					if(tmp) {
-						var target1 = this.target;
-						if(Object.prototype.hasOwnProperty.call(target1,"visible")) {
-							target1["visible"] = false;
-						} else {
-							Reflect.setProperty(target1,"visible",false);
-						}
-					}
-					this.complete(true);
-					return;
-				} else {
-					if(this._onRepeat != null) {
-						var method = this._onRepeat;
-						var params = this._onRepeatParams;
-						if(params == null) {
-							params = [];
-						}
-						method.apply(method,params);
-					}
-					if(this._reflect) {
-						this._reverse = !this._reverse;
-					}
-					this.startTime = currentTime;
-					this.timeOffset = this.startTime + this._delay;
-					if(this._repeat > 0) {
-						this._repeat--;
-					}
-				}
-			}
-			if(this.sendChange) {
-				this.change();
-			}
-		}
-	}
-	,__class__: motion_actuators_SimpleActuator
-});
-var motion_easing_Expo = function() { };
-$hxClasses["motion.easing.Expo"] = motion_easing_Expo;
-motion_easing_Expo.__name__ = ["motion","easing","Expo"];
-motion_easing_Expo.__properties__ = {get_easeOut:"get_easeOut",get_easeInOut:"get_easeInOut",get_easeIn:"get_easeIn"};
-motion_easing_Expo.get_easeIn = function() {
-	return new motion_easing_ExpoEaseIn();
-};
-motion_easing_Expo.get_easeInOut = function() {
-	return new motion_easing_ExpoEaseInOut();
-};
-motion_easing_Expo.get_easeOut = function() {
-	return new motion_easing_ExpoEaseOut();
-};
-var motion_easing_IEasing = function() { };
-$hxClasses["motion.easing.IEasing"] = motion_easing_IEasing;
-motion_easing_IEasing.__name__ = ["motion","easing","IEasing"];
-motion_easing_IEasing.prototype = {
-	__class__: motion_easing_IEasing
-};
-var motion_easing_ExpoEaseOut = function() {
-};
-$hxClasses["motion.easing.ExpoEaseOut"] = motion_easing_ExpoEaseOut;
-motion_easing_ExpoEaseOut.__name__ = ["motion","easing","ExpoEaseOut"];
-motion_easing_ExpoEaseOut.__interfaces__ = [motion_easing_IEasing];
-motion_easing_ExpoEaseOut.prototype = {
-	calculate: function(k) {
-		if(k == 1) {
-			return 1;
-		} else {
-			return 1 - Math.pow(2,-10 * k);
-		}
-	}
-	,ease: function(t,b,c,d) {
-		if(t == d) {
-			return b + c;
-		} else {
-			return c * (1 - Math.pow(2,-10 * t / d)) + b;
-		}
-	}
-	,__class__: motion_easing_ExpoEaseOut
-};
-var motion_Actuate = function() { };
-$hxClasses["motion.Actuate"] = motion_Actuate;
-motion_Actuate.__name__ = ["motion","Actuate"];
-motion_Actuate.apply = function(target,properties,customActuator) {
-	motion_Actuate.stop(target,properties);
-	if(customActuator == null) {
-		customActuator = motion_Actuate.defaultActuator;
-	}
-	var actuator = Type.createInstance(customActuator,[target,0,properties]);
-	actuator.apply();
-	return actuator;
-};
-motion_Actuate.getLibrary = function(target,allowCreation) {
-	if(allowCreation == null) {
-		allowCreation = true;
-	}
-	if(motion_Actuate.targetLibraries.h.__keys__[target.__id__] == null && allowCreation) {
-		motion_Actuate.targetLibraries.set(target,[]);
-	}
-	return motion_Actuate.targetLibraries.h[target.__id__];
-};
-motion_Actuate.isActive = function() {
-	var result = false;
-	var library = motion_Actuate.targetLibraries.iterator();
-	while(library.hasNext()) {
-		var library1 = library.next();
-		result = true;
-		break;
-	}
-	return result;
-};
-motion_Actuate.motionPath = function(target,duration,properties,overwrite) {
-	if(overwrite == null) {
-		overwrite = true;
-	}
-	return motion_Actuate.tween(target,duration,properties,overwrite,motion_actuators_MotionPathActuator);
-};
-motion_Actuate.pause = function(target) {
-	if(js_Boot.__instanceof(target,motion_actuators_IGenericActuator)) {
-		var actuator = target;
-		actuator.pause();
-	} else {
-		var library = motion_Actuate.getLibrary(target,false);
-		if(library != null) {
-			var _g = 0;
-			while(_g < library.length) {
-				var actuator1 = library[_g];
-				++_g;
-				actuator1.pause();
-			}
-		}
-	}
-};
-motion_Actuate.pauseAll = function() {
-	var library = motion_Actuate.targetLibraries.iterator();
-	while(library.hasNext()) {
-		var library1 = library.next();
-		var _g = 0;
-		while(_g < library1.length) {
-			var actuator = library1[_g];
-			++_g;
-			actuator.pause();
-		}
-	}
-};
-motion_Actuate.reset = function() {
-	var library = motion_Actuate.targetLibraries.iterator();
-	while(library.hasNext()) {
-		var library1 = library.next();
-		var i = library1.length - 1;
-		while(i >= 0) {
-			library1[i].stop(null,false,false);
-			--i;
-		}
-	}
-	motion_Actuate.targetLibraries = new haxe_ds_ObjectMap();
-};
-motion_Actuate.resume = function(target) {
-	if(js_Boot.__instanceof(target,motion_actuators_IGenericActuator)) {
-		var actuator = target;
-		actuator.resume();
-	} else {
-		var library = motion_Actuate.getLibrary(target,false);
-		if(library != null) {
-			var _g = 0;
-			while(_g < library.length) {
-				var actuator1 = library[_g];
-				++_g;
-				actuator1.resume();
-			}
-		}
-	}
-};
-motion_Actuate.resumeAll = function() {
-	var library = motion_Actuate.targetLibraries.iterator();
-	while(library.hasNext()) {
-		var library1 = library.next();
-		var _g = 0;
-		while(_g < library1.length) {
-			var actuator = library1[_g];
-			++_g;
-			actuator.resume();
-		}
-	}
-};
-motion_Actuate.stop = function(target,properties,complete,sendEvent) {
-	if(sendEvent == null) {
-		sendEvent = true;
-	}
-	if(complete == null) {
-		complete = false;
-	}
-	if(target != null) {
-		if(js_Boot.__instanceof(target,motion_actuators_IGenericActuator)) {
-			var actuator = target;
-			actuator.stop(null,complete,sendEvent);
-		} else {
-			var library = motion_Actuate.getLibrary(target,false);
-			if(library != null) {
-				if(typeof(properties) == "string") {
-					var temp = { };
-					temp[properties] = null;
-					properties = temp;
-				} else if((properties instanceof Array) && properties.__enum__ == null) {
-					var temp1 = { };
-					var _g = 0;
-					var _g1 = js_Boot.__cast(properties , Array);
-					while(_g < _g1.length) {
-						var property = _g1[_g];
-						++_g;
-						temp1[property] = null;
-					}
-					properties = temp1;
-				}
-				var i = library.length - 1;
-				while(i >= 0) {
-					library[i].stop(properties,complete,sendEvent);
-					--i;
-				}
-			}
-		}
-	}
-};
-motion_Actuate.timer = function(duration,customActuator) {
-	return motion_Actuate.tween(new motion__$Actuate_TweenTimer(0),duration,new motion__$Actuate_TweenTimer(1),false,customActuator);
-};
-motion_Actuate.tween = function(target,duration,properties,overwrite,customActuator) {
-	if(overwrite == null) {
-		overwrite = true;
-	}
-	if(target != null) {
-		if(duration > 0) {
-			if(customActuator == null) {
-				customActuator = motion_Actuate.defaultActuator;
-			}
-			var actuator = Type.createInstance(customActuator,[target,duration,properties]);
-			var library = motion_Actuate.getLibrary(actuator.target);
-			if(overwrite) {
-				var i = library.length - 1;
-				while(i >= 0) {
-					library[i].stop(actuator.properties,false,false);
-					--i;
-				}
-				library = motion_Actuate.getLibrary(actuator.target);
-			}
-			library.push(actuator);
-			actuator.move();
-			return actuator;
-		} else {
-			return motion_Actuate.apply(target,properties,customActuator);
-		}
-	}
-	return null;
-};
-motion_Actuate.unload = function(actuator) {
-	var target = actuator.target;
-	if(motion_Actuate.targetLibraries.h.__keys__[target.__id__] != null) {
-		HxOverrides.remove(motion_Actuate.targetLibraries.h[target.__id__],actuator);
-		if(motion_Actuate.targetLibraries.h[target.__id__].length == 0) {
-			motion_Actuate.targetLibraries.remove(target);
-		}
-	}
-};
-motion_Actuate.update = function(target,duration,start,end,overwrite) {
-	if(overwrite == null) {
-		overwrite = true;
-	}
-	var properties = { start : start, end : end};
-	return motion_Actuate.tween(target,duration,properties,overwrite,motion_actuators_MethodActuator);
-};
-var motion__$Actuate_TweenTimer = function(progress) {
-	this.progress = progress;
-};
-$hxClasses["motion._Actuate.TweenTimer"] = motion__$Actuate_TweenTimer;
-motion__$Actuate_TweenTimer.__name__ = ["motion","_Actuate","TweenTimer"];
-motion__$Actuate_TweenTimer.prototype = {
-	__class__: motion__$Actuate_TweenTimer
-};
-var motion_MotionPath = function() {
-	this._x = new motion_ComponentPath();
-	this._y = new motion_ComponentPath();
-	this._rotation = null;
-};
-$hxClasses["motion.MotionPath"] = motion_MotionPath;
-motion_MotionPath.__name__ = ["motion","MotionPath"];
-motion_MotionPath.prototype = {
-	bezier: function(x,y,controlX,controlY,strength) {
-		if(strength == null) {
-			strength = 1;
-		}
-		this._x.addPath(new motion_BezierPath(x,controlX,strength));
-		this._y.addPath(new motion_BezierPath(y,controlY,strength));
-		return this;
-	}
-	,line: function(x,y,strength) {
-		if(strength == null) {
-			strength = 1;
-		}
-		this._x.addPath(new motion_LinearPath(x,strength));
-		this._y.addPath(new motion_LinearPath(y,strength));
-		return this;
-	}
-	,get_rotation: function() {
-		if(this._rotation == null) {
-			this._rotation = new motion_RotationPath(this._x,this._y);
-		}
-		return this._rotation;
-	}
-	,get_x: function() {
-		return this._x;
-	}
-	,get_y: function() {
-		return this._y;
-	}
-	,__class__: motion_MotionPath
-	,__properties__: {get_y:"get_y",get_x:"get_x",get_rotation:"get_rotation"}
-};
-var motion_IComponentPath = function() { };
-$hxClasses["motion.IComponentPath"] = motion_IComponentPath;
-motion_IComponentPath.__name__ = ["motion","IComponentPath"];
-motion_IComponentPath.prototype = {
-	__class__: motion_IComponentPath
-	,__properties__: {get_end:"get_end"}
-};
-var motion_ComponentPath = function() {
-	this.paths = [];
-	this.start = 0;
-	this.totalStrength = 0;
-};
-$hxClasses["motion.ComponentPath"] = motion_ComponentPath;
-motion_ComponentPath.__name__ = ["motion","ComponentPath"];
-motion_ComponentPath.__interfaces__ = [motion_IComponentPath];
-motion_ComponentPath.prototype = {
-	addPath: function(path) {
-		this.paths.push(path);
-		this.totalStrength += path.strength;
-	}
-	,calculate: function(k) {
-		if(this.paths.length == 1) {
-			return this.paths[0].calculate(this.start,k);
-		} else {
-			var ratio = k * this.totalStrength;
-			var lastEnd = this.start;
-			var _g = 0;
-			var _g1 = this.paths;
-			while(_g < _g1.length) {
-				var path = _g1[_g];
-				++_g;
-				if(ratio > path.strength) {
-					ratio -= path.strength;
-					lastEnd = path.end;
-				} else {
-					return path.calculate(lastEnd,ratio / path.strength);
-				}
-			}
-		}
-		return 0;
-	}
-	,get_end: function() {
-		if(this.paths.length > 0) {
-			var path = this.paths[this.paths.length - 1];
-			return path.end;
-		} else {
-			return this.start;
-		}
-	}
-	,__class__: motion_ComponentPath
-	,__properties__: {get_end:"get_end"}
-};
-var motion_BezierPath = function(end,control,strength) {
-	this.end = end;
-	this.control = control;
-	this.strength = strength;
-};
-$hxClasses["motion.BezierPath"] = motion_BezierPath;
-motion_BezierPath.__name__ = ["motion","BezierPath"];
-motion_BezierPath.prototype = {
-	calculate: function(start,k) {
-		return (1 - k) * (1 - k) * start + 2 * (1 - k) * k * this.control + k * k * this.end;
-	}
-	,__class__: motion_BezierPath
-};
-var motion_LinearPath = function(end,strength) {
-	motion_BezierPath.call(this,end,0,strength);
-};
-$hxClasses["motion.LinearPath"] = motion_LinearPath;
-motion_LinearPath.__name__ = ["motion","LinearPath"];
-motion_LinearPath.__super__ = motion_BezierPath;
-motion_LinearPath.prototype = $extend(motion_BezierPath.prototype,{
-	calculate: function(start,k) {
-		return start + k * (this.end - start);
-	}
-	,__class__: motion_LinearPath
-});
-var motion_RotationPath = function(x,y) {
-	this.step = 0.01;
-	this._x = x;
-	this._y = y;
-	this.offset = 0;
-	this.start = this.calculate(0.0);
-};
-$hxClasses["motion.RotationPath"] = motion_RotationPath;
-motion_RotationPath.__name__ = ["motion","RotationPath"];
-motion_RotationPath.__interfaces__ = [motion_IComponentPath];
-motion_RotationPath.prototype = {
-	calculate: function(k) {
-		var dX = this._x.calculate(k) - this._x.calculate(k + this.step);
-		var dY = this._y.calculate(k) - this._y.calculate(k + this.step);
-		var angle = Math.atan2(dY,dX) * (180 / Math.PI);
-		angle = (angle + this.offset) % 360;
-		return angle;
-	}
-	,get_end: function() {
-		return this.calculate(1.0);
-	}
-	,__class__: motion_RotationPath
-	,__properties__: {get_end:"get_end"}
-};
-var motion_actuators_MethodActuator = function(target,duration,properties) {
-	this.currentParameters = [];
-	this.tweenProperties = { };
-	motion_actuators_SimpleActuator.call(this,target,duration,properties);
-	if(!Object.prototype.hasOwnProperty.call(properties,"start")) {
-		this.properties.start = [];
-	}
-	if(!Object.prototype.hasOwnProperty.call(properties,"end")) {
-		this.properties.end = this.properties.start;
-	}
-	var _g1 = 0;
-	var _g = this.properties.start.length;
-	while(_g1 < _g) {
-		var i = _g1++;
-		this.currentParameters.push(this.properties.start[i]);
-	}
-};
-$hxClasses["motion.actuators.MethodActuator"] = motion_actuators_MethodActuator;
-motion_actuators_MethodActuator.__name__ = ["motion","actuators","MethodActuator"];
-motion_actuators_MethodActuator.__super__ = motion_actuators_SimpleActuator;
-motion_actuators_MethodActuator.prototype = $extend(motion_actuators_SimpleActuator.prototype,{
-	apply: function() {
-		var method = this.target;
-		var params = this.properties.end;
-		if(params == null) {
-			params = [];
-		}
-		method.apply(method,params);
-	}
-	,complete: function(sendEvent) {
-		if(sendEvent == null) {
-			sendEvent = true;
-		}
-		var _g1 = 0;
-		var _g = this.properties.start.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			this.currentParameters[i] = Reflect.field(this.tweenProperties,"param" + i);
-		}
-		var method = this.target;
-		var params = this.currentParameters;
-		if(params == null) {
-			params = [];
-		}
-		method.apply(method,params);
-		motion_actuators_SimpleActuator.prototype.complete.call(this,sendEvent);
-	}
-	,initialize: function() {
-		var details;
-		var propertyName;
-		var start;
-		var _g1 = 0;
-		var _g = this.properties.start.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			propertyName = "param" + i;
-			start = this.properties.start[i];
-			this.tweenProperties[propertyName] = start;
-			if(typeof(start) == "number" || typeof(start) == "number" && ((start | 0) === start)) {
-				details = new motion_actuators_PropertyDetails(this.tweenProperties,propertyName,start,this.properties.end[i] - start);
-				this.propertyDetails.push(details);
-			}
-		}
-		this.detailsLength = this.propertyDetails.length;
-		this.initialized = true;
-	}
-	,update: function(currentTime) {
-		motion_actuators_SimpleActuator.prototype.update.call(this,currentTime);
-		if(this.active && !this.paused) {
-			var _g1 = 0;
-			var _g = this.properties.start.length;
-			while(_g1 < _g) {
-				var i = _g1++;
-				this.currentParameters[i] = Reflect.field(this.tweenProperties,"param" + i);
-			}
-			var method = this.target;
-			var params = this.currentParameters;
-			if(params == null) {
-				params = [];
-			}
-			method.apply(method,params);
-		}
-	}
-	,__class__: motion_actuators_MethodActuator
-});
-var motion_actuators_MotionPathActuator = function(target,duration,properties) {
-	motion_actuators_SimpleActuator.call(this,target,duration,properties);
-};
-$hxClasses["motion.actuators.MotionPathActuator"] = motion_actuators_MotionPathActuator;
-motion_actuators_MotionPathActuator.__name__ = ["motion","actuators","MotionPathActuator"];
-motion_actuators_MotionPathActuator.__super__ = motion_actuators_SimpleActuator;
-motion_actuators_MotionPathActuator.prototype = $extend(motion_actuators_SimpleActuator.prototype,{
-	apply: function() {
-		var _g = 0;
-		var _g1 = Reflect.fields(this.properties);
-		while(_g < _g1.length) {
-			var propertyName = _g1[_g];
-			++_g;
-			if(Object.prototype.hasOwnProperty.call(this.target,propertyName)) {
-				this.target[propertyName] = (js_Boot.__cast(Reflect.field(this.properties,propertyName) , motion_IComponentPath)).get_end();
-			} else {
-				Reflect.setProperty(this.target,propertyName,(js_Boot.__cast(Reflect.field(this.properties,propertyName) , motion_IComponentPath)).get_end());
-			}
-		}
-	}
-	,initialize: function() {
-		var details;
-		var path;
-		var _g = 0;
-		var _g1 = Reflect.fields(this.properties);
-		while(_g < _g1.length) {
-			var propertyName = _g1[_g];
-			++_g;
-			path = js_Boot.__cast(Reflect.field(this.properties,propertyName) , motion_IComponentPath);
-			if(path != null) {
-				var isField = true;
-				if(Object.prototype.hasOwnProperty.call(this.target,propertyName)) {
-					path.start = Reflect.field(this.target,propertyName);
-				} else {
-					isField = false;
-					path.start = Reflect.getProperty(this.target,propertyName);
-				}
-				details = new motion_actuators_PropertyPathDetails(this.target,propertyName,path,isField);
-				this.propertyDetails.push(details);
-			}
-		}
-		this.detailsLength = this.propertyDetails.length;
-		this.initialized = true;
-	}
-	,update: function(currentTime) {
-		if(!this.paused) {
-			var details;
-			var easing;
-			var tweenPosition = (currentTime - this.timeOffset) / this.duration;
-			if(tweenPosition > 1) {
-				tweenPosition = 1;
-			}
-			if(!this.initialized) {
-				this.initialize();
-			}
-			if(!this.special) {
-				easing = this._ease.calculate(tweenPosition);
-				var _g = 0;
-				var _g1 = this.propertyDetails;
-				while(_g < _g1.length) {
-					var details1 = _g1[_g];
-					++_g;
-					if(details1.isField) {
-						details1.target[details1.propertyName] = (js_Boot.__cast(details1 , motion_actuators_PropertyPathDetails)).path.calculate(easing);
-					} else {
-						Reflect.setProperty(details1.target,details1.propertyName,(js_Boot.__cast(details1 , motion_actuators_PropertyPathDetails)).path.calculate(easing));
-					}
-				}
-			} else {
-				if(!this._reverse) {
-					easing = this._ease.calculate(tweenPosition);
-				} else {
-					easing = this._ease.calculate(1 - tweenPosition);
-				}
-				var endValue;
-				var _g2 = 0;
-				var _g11 = this.propertyDetails;
-				while(_g2 < _g11.length) {
-					var details2 = _g11[_g2];
-					++_g2;
-					if(!this._snapping) {
-						if(details2.isField) {
-							details2.target[details2.propertyName] = (js_Boot.__cast(details2 , motion_actuators_PropertyPathDetails)).path.calculate(easing);
-						} else {
-							Reflect.setProperty(details2.target,details2.propertyName,(js_Boot.__cast(details2 , motion_actuators_PropertyPathDetails)).path.calculate(easing));
-						}
-					} else if(details2.isField) {
-						details2.target[details2.propertyName] = Math.round((js_Boot.__cast(details2 , motion_actuators_PropertyPathDetails)).path.calculate(easing));
-					} else {
-						Reflect.setProperty(details2.target,details2.propertyName,Math.round((js_Boot.__cast(details2 , motion_actuators_PropertyPathDetails)).path.calculate(easing)));
-					}
-				}
-			}
-			if(tweenPosition == 1) {
-				if(this._repeat == 0) {
-					this.active = false;
-					var tmp;
-					if(this.toggleVisible) {
-						var target = this.target;
-						var value = null;
-						if(Object.prototype.hasOwnProperty.call(target,"alpha")) {
-							value = Reflect.field(target,"alpha");
-						} else {
-							value = Reflect.getProperty(target,"alpha");
-						}
-						tmp = value == 0;
-					} else {
-						tmp = false;
-					}
-					if(tmp) {
-						var target1 = this.target;
-						if(Object.prototype.hasOwnProperty.call(target1,"visible")) {
-							target1["visible"] = false;
-						} else {
-							Reflect.setProperty(target1,"visible",false);
-						}
-					}
-					this.complete(true);
-					return;
-				} else {
-					if(this._onRepeat != null) {
-						var method = this._onRepeat;
-						var params = this._onRepeatParams;
-						if(params == null) {
-							params = [];
-						}
-						method.apply(method,params);
-					}
-					if(this._reflect) {
-						this._reverse = !this._reverse;
-					}
-					this.startTime = currentTime;
-					this.timeOffset = this.startTime + this._delay;
-					if(this._repeat > 0) {
-						this._repeat--;
-					}
-				}
-			}
-			if(this.sendChange) {
-				this.change();
-			}
-		}
-	}
-	,__class__: motion_actuators_MotionPathActuator
-});
-var motion_actuators_PropertyDetails = function(target,propertyName,start,change,isField) {
-	if(isField == null) {
-		isField = true;
-	}
-	this.target = target;
-	this.propertyName = propertyName;
-	this.start = start;
-	this.change = change;
-	this.isField = isField;
-};
-$hxClasses["motion.actuators.PropertyDetails"] = motion_actuators_PropertyDetails;
-motion_actuators_PropertyDetails.__name__ = ["motion","actuators","PropertyDetails"];
-motion_actuators_PropertyDetails.prototype = {
-	__class__: motion_actuators_PropertyDetails
-};
-var motion_actuators_PropertyPathDetails = function(target,propertyName,path,isField) {
-	if(isField == null) {
-		isField = true;
-	}
-	motion_actuators_PropertyDetails.call(this,target,propertyName,0,0,isField);
-	this.path = path;
-};
-$hxClasses["motion.actuators.PropertyPathDetails"] = motion_actuators_PropertyPathDetails;
-motion_actuators_PropertyPathDetails.__name__ = ["motion","actuators","PropertyPathDetails"];
-motion_actuators_PropertyPathDetails.__super__ = motion_actuators_PropertyDetails;
-motion_actuators_PropertyPathDetails.prototype = $extend(motion_actuators_PropertyDetails.prototype,{
-	__class__: motion_actuators_PropertyPathDetails
-});
-var motion_easing_ExpoEaseIn = function() {
-};
-$hxClasses["motion.easing.ExpoEaseIn"] = motion_easing_ExpoEaseIn;
-motion_easing_ExpoEaseIn.__name__ = ["motion","easing","ExpoEaseIn"];
-motion_easing_ExpoEaseIn.__interfaces__ = [motion_easing_IEasing];
-motion_easing_ExpoEaseIn.prototype = {
-	calculate: function(k) {
-		if(k == 0) {
-			return 0;
-		} else {
-			return Math.pow(2,10 * (k - 1));
-		}
-	}
-	,ease: function(t,b,c,d) {
-		if(t == 0) {
-			return b;
-		} else {
-			return c * Math.pow(2,10 * (t / d - 1)) + b;
-		}
-	}
-	,__class__: motion_easing_ExpoEaseIn
-};
-var motion_easing_ExpoEaseInOut = function() {
-};
-$hxClasses["motion.easing.ExpoEaseInOut"] = motion_easing_ExpoEaseInOut;
-motion_easing_ExpoEaseInOut.__name__ = ["motion","easing","ExpoEaseInOut"];
-motion_easing_ExpoEaseInOut.__interfaces__ = [motion_easing_IEasing];
-motion_easing_ExpoEaseInOut.prototype = {
-	calculate: function(k) {
-		if(k == 0) {
-			return 0;
-		}
-		if(k == 1) {
-			return 1;
-		}
-		if((k /= 0.5) < 1.0) {
-			return 0.5 * Math.pow(2,10 * (k - 1));
-		}
-		return 0.5 * (2 - Math.pow(2,-10 * --k));
-	}
-	,ease: function(t,b,c,d) {
-		if(t == 0) {
-			return b;
-		}
-		if(t == d) {
-			return b + c;
-		}
-		if((t /= d / 2.0) < 1.0) {
-			return c / 2 * Math.pow(2,10 * (t - 1)) + b;
-		}
-		return c / 2 * (2 - Math.pow(2,-10 * --t)) + b;
-	}
-	,__class__: motion_easing_ExpoEaseInOut
-};
-var motion_easing_Quad = function() { };
-$hxClasses["motion.easing.Quad"] = motion_easing_Quad;
-motion_easing_Quad.__name__ = ["motion","easing","Quad"];
-motion_easing_Quad.__properties__ = {get_easeOut:"get_easeOut",get_easeInOut:"get_easeInOut",get_easeIn:"get_easeIn"};
-motion_easing_Quad.get_easeIn = function() {
-	return new motion_easing_QuadEaseIn();
-};
-motion_easing_Quad.get_easeInOut = function() {
-	return new motion_easing_QuadEaseInOut();
-};
-motion_easing_Quad.get_easeOut = function() {
-	return new motion_easing_QuadEaseOut();
-};
-var motion_easing_QuadEaseIn = function() {
-};
-$hxClasses["motion.easing.QuadEaseIn"] = motion_easing_QuadEaseIn;
-motion_easing_QuadEaseIn.__name__ = ["motion","easing","QuadEaseIn"];
-motion_easing_QuadEaseIn.__interfaces__ = [motion_easing_IEasing];
-motion_easing_QuadEaseIn.prototype = {
-	calculate: function(k) {
-		return k * k;
-	}
-	,ease: function(t,b,c,d) {
-		return c * (t /= d) * t + b;
-	}
-	,__class__: motion_easing_QuadEaseIn
-};
-var motion_easing_QuadEaseInOut = function() {
-};
-$hxClasses["motion.easing.QuadEaseInOut"] = motion_easing_QuadEaseInOut;
-motion_easing_QuadEaseInOut.__name__ = ["motion","easing","QuadEaseInOut"];
-motion_easing_QuadEaseInOut.__interfaces__ = [motion_easing_IEasing];
-motion_easing_QuadEaseInOut.prototype = {
-	calculate: function(k) {
-		if((k *= 2) < 1) {
-			return 0.5 * k * k;
-		}
-		return -0.5 * ((k - 1) * (k - 3) - 1);
-	}
-	,ease: function(t,b,c,d) {
-		if((t /= d / 2) < 1) {
-			return c / 2 * t * t + b;
-		}
-		return -c / 2 * ((t - 1) * (t - 3) - 1) + b;
-	}
-	,__class__: motion_easing_QuadEaseInOut
-};
-var motion_easing_QuadEaseOut = function() {
-};
-$hxClasses["motion.easing.QuadEaseOut"] = motion_easing_QuadEaseOut;
-motion_easing_QuadEaseOut.__name__ = ["motion","easing","QuadEaseOut"];
-motion_easing_QuadEaseOut.__interfaces__ = [motion_easing_IEasing];
-motion_easing_QuadEaseOut.prototype = {
-	calculate: function(k) {
-		return -k * (k - 2);
-	}
-	,ease: function(t,b,c,d) {
-		return -c * (t /= d) * (t - 2) + b;
-	}
-	,__class__: motion_easing_QuadEaseOut
-};
 var msignal_Signal0 = function() {
 	msignal_Signal.call(this);
 };
@@ -5137,12 +3819,20 @@ msignal_SlotList.prototype = {
 	,__class__: msignal_SlotList
 	,__properties__: {get_length:"get_length"}
 };
-var react_Partial = function() { };
-$hxClasses["react.Partial"] = react_Partial;
-react_Partial.__name__ = ["react","Partial"];
-var react_PartialMacro = function() { };
-$hxClasses["react.PartialMacro"] = react_PartialMacro;
-react_PartialMacro.__name__ = ["react","PartialMacro"];
+var valueObject_Todo = function(id,text,completed,createdAt) {
+	this.id = id;
+	this.text = text;
+	this.completed = completed;
+	this.createdAt = createdAt;
+};
+$hxClasses["valueObject.Todo"] = valueObject_Todo;
+valueObject_Todo.__name__ = ["valueObject","Todo"];
+valueObject_Todo.prototype = {
+	toggle: function() {
+		return new valueObject_Todo(this.id,this.text,!this.completed,this.createdAt);
+	}
+	,__class__: valueObject_Todo
+};
 var yloader_ILoader = function() { };
 $hxClasses["yloader.ILoader"] = yloader_ILoader;
 yloader_ILoader.__name__ = ["yloader","ILoader"];
@@ -5406,8 +4096,6 @@ String.prototype.__class__ = $hxClasses["String"] = String;
 String.__name__ = ["String"];
 $hxClasses["Array"] = Array;
 Array.__name__ = ["Array"];
-Date.prototype.__class__ = $hxClasses["Date"] = Date;
-Date.__name__ = ["Date"];
 var Int = $hxClasses["Int"] = { __name__ : ["Int"]};
 var Dynamic = $hxClasses["Dynamic"] = { __name__ : ["Dynamic"]};
 var Float = $hxClasses["Float"] = Number;
@@ -5431,8 +4119,6 @@ app_controller_commands_todo_CreateTodoCommand.__meta__ = { fields : { infoPopup
 app_controller_commands_todo_DeleteTodoCommand.__meta__ = { fields : { infoPopupMediatorSignal : { type : ["app.controller.signals.InfoPopupMediatorNotificationSignal"], inject : null}, todoListNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
 app_controller_commands_todo_ToggleTodoCommand.__meta__ = { fields : { infoPopupMediatorSignal : { type : ["app.controller.signals.InfoPopupMediatorNotificationSignal"], inject : null}, todoListNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
 app_controller_commands_todo_UpdateTodoCommand.__meta__ = { fields : { infoPopupMediatorSignal : { type : ["app.controller.signals.InfoPopupMediatorNotificationSignal"], inject : null}, todoListNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}, text : { type : ["String"], inject : null}}};
-app_controller_signals_ApplicationMediatorNotificationSignal.PREFIX = "application_mediator_signal__";
-app_controller_signals_ApplicationMediatorNotificationSignal.NOTIFICATION = app_controller_signals_ApplicationMediatorNotificationSignal.PREFIX + "some_message";
 app_controller_signals_InfoPopupMediatorNotificationSignal.PREFIX = "infopopup_mediator_signal__";
 app_controller_signals_InfoPopupMediatorNotificationSignal.SHOW_INFO = app_controller_signals_InfoPopupMediatorNotificationSignal.PREFIX + "show_info";
 app_controller_signals_TodoFormMediatorNotificationSignal.PREFIX = "todoform_mediator_signal__";
@@ -5441,42 +4127,41 @@ app_controller_signals_TodoListMediatorNotificationSignal.PREFIX = "todolist_med
 app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS = app_controller_signals_TodoListMediatorNotificationSignal.PREFIX + "setdata";
 app_controller_signals_TodoListMediatorNotificationSignal.ADD_TODO = app_controller_signals_TodoListMediatorNotificationSignal.PREFIX + "addtodo";
 mmvc_impl_Actor.__meta__ = { fields : { injector : { type : ["minject.Injector"], inject : null}}};
-app_model_services_ServerService.__instance = new app_model_services_ServerService();
+app_model_service_ServerService.ERRRO_PARSING_INCOME_DATA = "Error in parsing data";
+app_model_service_ServerService.__instance = new app_model_service_ServerService();
 core_view_MediatedComponent.displayName = "MediatedComponent";
-app_view_components_TodoForm.PROPS_BUTTON_ADD = { key : "btnAddTodo", children : "Add", onClick : null, className : ""};
-app_view_components_TodoForm.PROPS_INPUT_TEXT = { key : "inpTodoText", type : "text", onChange : null, onKeyPress : null, value : "", className : ""};
+app_view_components_TodoForm.PROPS_BUTTON_ADD = { children : "Add", onClick : null, className : ""};
+app_view_components_TodoForm.PROPS_INPUT_TEXT = { type : "text", onChange : null, onKeyPress : null, value : "", className : ""};
 app_view_components_TodoForm.displayName = "TodoForm";
 app_view_components_TodoList.displayName = "TodoList";
 app_view_components_popups_InfoPopup.ID = "infoPopup";
 app_view_components_popups_InfoPopup.ANIMATION_CLASS_NAME = "popup-info-animation";
 app_view_components_popups_InfoPopup.displayName = "InfoPopup";
-app_view_components_todolist_TodoListItem.PROPS = { key : "todoListItem", className : ""};
-app_view_components_todolist_TodoListItem.PROPS_TOGGLE = { key : "chbTriggerTodo", type : "checkbox", checked : false, className : "todo-list-item-toggle", onChange : null};
-app_view_components_todolist_TodoListItem.PROPS_TEXT = { key : "inpTodoText", type : "text", className : "", onChange : null, value : ""};
-app_view_components_todolist_TodoListItem.PROPS_BUTTON = { key : "btnDeleteTodo", children : "", className : "todo-list-item-btn", onClick : null};
+app_view_components_todolist_TodoListItem.PROPS_TOGGLE = { type : "checkbox", checked : false, className : "todo-list-item-toggle", onChange : null};
+app_view_components_todolist_TodoListItem.PROPS_TEXT = { type : "text", className : "", onChange : null, value : ""};
+app_view_components_todolist_TodoListItem.PROPS_BUTTON = { children : "", className : "todo-list-item-btn", onClick : null};
 app_view_components_todolist_TodoListItem.displayName = "TodoListItem";
 mmvc_api_IMediator.__meta__ = { obj : { 'interface' : null}};
 mmvc_impl_Mediator.__meta__ = { fields : { injector : { type : ["minject.Injector"], inject : null}, contextView : { type : ["mmvc.api.IViewContainer"], inject : null}, mediatorMap : { type : ["mmvc.api.IMediatorMap"], inject : null}}};
-app_view_mediators_ApplicationMediator.__meta__ = { fields : { applicationNotificatyionsSignal : { type : ["app.controller.signals.ApplicationMediatorNotificationSignal"], inject : null}}};
 app_view_mediators_InfoPopupMediator.__meta__ = { fields : { notificationsSignal : { type : ["app.controller.signals.InfoPopupMediatorNotificationSignal"], inject : null}}};
 app_view_mediators_TodoFormMediator.__meta__ = { fields : { notificationsSignal : { type : ["app.controller.signals.TodoFormMediatorNotificationSignal"], inject : null}, createTodoSignal : { type : ["app.controller.signals.todoform.CreateTodoSignal"], inject : null}}};
 app_view_mediators_TodoListMediator.__meta__ = { fields : { notificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, deleteTodoSignal : { type : ["app.controller.signals.todolist.DeleteTodoSignal"], inject : null}, updateTodoSignal : { type : ["app.controller.signals.todolist.UpdateTodoSignal"], inject : null}, toggleTodoSignal : { type : ["app.controller.signals.todolist.ToggleTodoSignal"], inject : null}}};
-consts_network_ServerAPI.ROUTE_TODOS = "todos";
-consts_network_ServerAPI.GATEWAY = "http://localhost:3001/api/";
-consts_strings_MessageStrings.PREPARING = "PREPARING";
-consts_strings_MessageStrings.FAIL_TO_LOAD_DATA = "FAIL TO LOAD DATA!";
-consts_strings_MessageStrings.DATA_READY = "DATA READY!";
-consts_strings_MessageStrings.DELETE_ITEM_SUCCESS = "ITEM ( %id% ) DELETED SUCCESSFUL!";
-consts_strings_MessageStrings.PROBLEM_DELETE_ITEM = "PROBLEM DELETING ITEM ( %id% )";
-consts_strings_MessageStrings.EMPTY_TODO = "EMPTY TODO CAN'T BE SAVED";
-consts_strings_MessageStrings.SAVING_NEW_TODO = "SAVING NEW TODO ...";
-consts_strings_MessageStrings.TODO_SAVED = "TODO SAVED!";
-consts_strings_MessageStrings.TODO_CANT_BE_UPDATED = "TODO CAN'T BE UPDATED!";
-consts_strings_MessageStrings.SAME_TODO_CANT_UPDATE = "NO CHANGES TO SAVE";
-consts_strings_MessageStrings.PROBLEM_SAVING_TODO = "DID NOT SAVE";
-consts_strings_MessageStrings.PROBLEM_UPDATE_TODO = "PROBLEM UPDATE TODO";
-consts_strings_MessageStrings.TODO_UPDATED = "TODO UPDATED";
-consts_strings_MessageStrings.TODO_COMPETE = "TODO %id% COMPLETE: %completed%";
+enums_network_ServerAPI.ROUTE_TODOS = "todos";
+enums_network_ServerAPI.GATEWAY = "http://localhost:3001/api/";
+enums_strings_MessageStrings.PREPARING = "PREPARING";
+enums_strings_MessageStrings.FAIL_TO_LOAD_DATA = "FAIL TO LOAD DATA!";
+enums_strings_MessageStrings.DATA_READY = "DATA READY!";
+enums_strings_MessageStrings.DELETE_ITEM_SUCCESS = "ITEM ( %id% ) DELETED SUCCESSFUL!";
+enums_strings_MessageStrings.PROBLEM_DELETE_ITEM = "PROBLEM DELETING ITEM ( %id% )";
+enums_strings_MessageStrings.EMPTY_TODO = "EMPTY TODO CAN'T BE SAVED";
+enums_strings_MessageStrings.SAVING_NEW_TODO = "SAVING NEW TODO ...";
+enums_strings_MessageStrings.TODO_SAVED = "TODO SAVED!";
+enums_strings_MessageStrings.TODO_CANT_BE_UPDATED = "TODO CAN'T BE UPDATED!";
+enums_strings_MessageStrings.SAME_TODO_CANT_UPDATE = "NO CHANGES TO SAVE";
+enums_strings_MessageStrings.PROBLEM_SAVING_TODO = "DID NOT SAVE";
+enums_strings_MessageStrings.PROBLEM_UPDATE_TODO = "PROBLEM UPDATE TODO";
+enums_strings_MessageStrings.TODO_UPDATED = "TODO UPDATED";
+enums_strings_MessageStrings.TODO_COMPETE = "TODO %id% COMPLETE: %completed%";
 haxe_IMap.__meta__ = { obj : { 'interface' : null}};
 haxe_ds_ObjectMap.count = 0;
 js_Boot.__toStr = ({ }).toString;
@@ -5486,15 +4171,6 @@ mmvc_api_IMediatorMap.__meta__ = { obj : { 'interface' : null}};
 mmvc_api_ITriggerMap.__meta__ = { obj : { 'interface' : null}};
 mmvc_api_IViewMap.__meta__ = { obj : { 'interface' : null}};
 mmvc_impl_TriggerCommand.__meta__ = { fields : { contextView : { type : ["mmvc.api.IViewContainer"], inject : null}, commandMap : { type : ["mmvc.api.ICommandMap"], inject : null}, injector : { type : ["minject.Injector"], inject : null}, mediatorMap : { type : ["mmvc.api.IMediatorMap"], inject : null}, triggerMap : { type : ["mmvc.api.ITriggerMap"], inject : null}}};
-motion_actuators_IGenericActuator.__meta__ = { obj : { 'interface' : null}};
-motion_actuators_SimpleActuator.actuators = [];
-motion_actuators_SimpleActuator.actuatorsLength = 0;
-motion_actuators_SimpleActuator.addedEvent = false;
-motion_easing_IEasing.__meta__ = { obj : { 'interface' : null}};
-motion_Actuate.defaultActuator = motion_actuators_SimpleActuator;
-motion_Actuate.defaultEase = motion_easing_Expo.get_easeOut();
-motion_Actuate.targetLibraries = new haxe_ds_ObjectMap();
-motion_IComponentPath.__meta__ = { obj : { 'interface' : null}};
 yloader_ILoader.__meta__ = { obj : { 'interface' : null}};
 yloader_enums_Status.UNKNOWN = -2;
 yloader_enums_Status.FAILED_TO_CONNECT_OR_RESOLVE_HOST = -1;

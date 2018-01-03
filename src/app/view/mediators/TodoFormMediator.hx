@@ -6,43 +6,36 @@ import mmvc.impl.Mediator;
 
 class TodoFormMediator extends Mediator<TodoForm>
 {
-    @inject public var notificationsSignal:TodoFormMediatorNotificationSignal;
+	@inject public var notificationsSignal:TodoFormMediatorNotificationSignal;
 
-    @inject public var createTodoSignal:CreateTodoSignal;
+	@inject public var createTodoSignal:CreateTodoSignal;
 
-    override public function onRegister()
-    {
-        super.onRegister();
+	override public function onRegister()
+	{
+		super.onRegister();
 
-        notificationsSignal.add(HandleNotification);
+		notificationsSignal.add(handleNotification);
 
-        var todoForm:TodoForm = cast getViewComponent();
-        todoForm.handleAddTodoButtonClick = HandleAddTodo;
-    }
+		view.addTodoButtonClickHandler = handleAddTodo;
+	}
 
-    private function HandleNotification(type:String, ?data:Dynamic):Void
-    {
-        switch(type)
+	private function handleNotification(type:String, ?data:Dynamic):Void
+	{
+		switch(type)
 		{
-            case TodoFormMediatorNotificationSignal.CLEAR_FORM:
-            {
-                var todoForm:TodoForm = cast getViewComponent();
-                todoForm.clear();
-            }
-        }
-    }
+			case TodoFormMediatorNotificationSignal.CLEAR_FORM:
+				view.clear();
+		}
+	}
 
-    private function HandleAddTodo(text:String):Void
-    {
-		var todoForm:TodoForm = cast getViewComponent();
-		todoForm.lock();
+	private function handleAddTodo(text:String):Void
+	{
+		view.lock();
 
 		createTodoSignal.complete.addOnce(function(success:Bool)
 		{
-		    todoForm.unlock();
-        });
-        createTodoSignal.dispatch(text);
-    }
-
-    public function new() { super(); }
+			view.unlock();
+		});
+		createTodoSignal.dispatch(text);
+	}
 }

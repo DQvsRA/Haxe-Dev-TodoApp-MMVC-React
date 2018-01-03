@@ -1,6 +1,5 @@
 package app.controller.signals;
-import msignal.Signal.Signal2;
-import msignal.Signal.Signal1;
+import msignal.Signal;
 
 class TodoListMediatorNotificationSignal extends Signal2<String, Dynamic>
 {
