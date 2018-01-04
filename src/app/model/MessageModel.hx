@@ -9,20 +9,22 @@ class MessageModel extends Actor
 	private var _messageStack:Array<String> = [];
 
 	public var length(get, null):Int;
-	public function get_length():Int
+	public var isMessageAnimating(default, set):Bool = false;
+
+	function get_length():Int
 	{
 		return _messageStack.length;
 	}
 
-	public var isMessageAnimating(default, set):Bool = false;
-	public function set_isMessageAnimating(value:Bool):Bool
+	function set_isMessageAnimating(value:Bool):Bool
 	{
-		isMessageAnimating = value;
-		if(value == false && _messageStack.length > 0)
+		if (isMessageAnimating != value)
 		{
-			messageAddedSignal.dispatch(_messageStack.shift());
+			isMessageAnimating = value;
+			if(value == false && _messageStack.length > 0)
+				messageAddedSignal.dispatch(_messageStack.shift());
 		}
-		return value;
+		return isMessageAnimating;
 	}
 
 	public function addMessage(text:String)

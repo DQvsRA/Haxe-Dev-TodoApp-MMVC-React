@@ -15,7 +15,7 @@ class InfoPopupMediator extends Mediator<InfoPopup>
 		mediate(messageModel.messageAddedSignal.add(handleMessage));
 	}
 
-	private function handleMessage (text:String):Void
+	private function handleMessage(text:String):Void
 	{
 		messageModel.isMessageAnimating = true;
 		view.message = text;
