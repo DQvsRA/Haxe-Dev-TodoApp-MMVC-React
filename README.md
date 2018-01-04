@@ -3,8 +3,11 @@
 Main purpose of it is to show how we can use MMVC and React library to create web-based application.
 
 Setup:
-1. Open project in IDEA
-2.1 Install server dependencies: npm install 
-2.2 Install process manager - pm2: npm install pm2 -g
-3. Start server by running in terminal: sh ./bat/server (on MacOS) or bat ./bat/server (on Windows) 
-4. For live update start grunt: grunt
+<ol>
+<li>Open project in IDEA</li>
+<li>Install server dependencies: <b>npm install</b></li>
+<li>Install process manager - pm2: <b>npm install pm2 -g</b></li>
+<li>Start server by running in terminal: <b>sh ./bat/server</b> (on MacOS) or <b>bat ./bat/server</b> (on Windows) </li>
+<li>For live update start grunt: <b>grunt</b></li>
+<li>If you don't have grunt install it: <b>npm install -g grunt && npm install -g grunt-cli</b></li>
+</ol>
