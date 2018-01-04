@@ -36,11 +36,6 @@ class UpdateTodoCommand extends Command
 		var updateSignal:UpdateTodoSignal = cast signal;
 		updateSignal.complete.dispatch(success);
 
-//		todoListNotificationSignal.dispatch(
-//			TodoListMediatorNotificationSignal.SETUP_TODOS,
-//			todoModel.getTodos()
-//		);
-
 		var message:String = success ?
 			MessageStrings.TODO_UPDATED
 		:   MessageStrings.PROBLEM_UPDATE_TODO
