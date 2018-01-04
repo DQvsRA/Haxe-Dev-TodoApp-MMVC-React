@@ -4,7 +4,6 @@ import app.controller.signals.todolist.ToggleTodoSignal;
 import app.controller.signals.todolist.UpdateTodoSignal;
 import app.controller.signals.TodoListMediatorNotificationSignal;
 import app.view.components.TodoList;
-import enums.actions.TodoAction;
 import mmvc.impl.Mediator;
 
 class TodoListMediator extends Mediator<TodoList>
@@ -19,31 +18,24 @@ class TodoListMediator extends Mediator<TodoList>
 	{
 		super.onRegister();
 
+		// This is another way how to handle system messages - notification broadcasting
+		// First parameter of any notification is a type (or name, or key)
+		// Second parameter is usually payload (any data)
 		mediate(notificationSignal.add(handleNotification));
+		mediate(view.toggleActionSignal.add(handleToggleTodoAction));
 
-		view.onAction = handleTodoListAction;
-
+		// It is different approach how to trigger the command
+		// Since we don't do any data processing in mediator
+		// and listening for view signal just duplicate the firing logic from TodoListItem
+		// we can pass one-way reference and trigger command execution directly from view component (TodoListItem)
+		view.updateActionSignal = updateTodoSignal;
+		view.deleteActionSignal = deleteTodoSignal;
 	}
 
-	private function handleTodoListAction(index:Int, action:TodoAction, ?callback:ActionCallback, ?data:Dynamic):Void {
-
-		trace(index+":"+action+":"+callback);
-
-		switch(action)
-		{
-			case TodoAction.UPDATE:
-				if(callback != null) updateTodoSignal.complete.addOnce(callback);
-				var text:String = Std.string(data);
-				updateTodoSignal.dispatch(index, text);
-
-			case TodoAction.TOGGLE:
-				if(callback != null) toggleTodoSignal.complete.addOnce(callback);
-				toggleTodoSignal.dispatch(index);
-
-			case TodoAction.DELETE:
-				if(callback!=null) deleteTodoSignal.complete.addOnce(callback);
-				deleteTodoSignal.dispatch(index);
-		}
+	private function handleToggleTodoAction (index:Int):Void
+	{
+		toggleTodoSignal.complete.addOnce(view.toggleActionSignal.complete.dispatch);
+		toggleTodoSignal.dispatch(index);
 	}
 
 	private function handleNotification(type:String, ?data:Dynamic):Void

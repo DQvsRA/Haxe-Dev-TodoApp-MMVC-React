@@ -14,9 +14,8 @@ class TodoFormMediator extends Mediator<TodoForm>
 	{
 		super.onRegister();
 
-		notificationsSignal.add(handleNotification);
-
-		view.addTodoButtonClickHandler = handleAddTodo;
+		mediate(notificationsSignal.add(handleNotification));
+		mediate(view.addTodoButtonClickSignal.add(handleAddTodo));
 	}
 
 	private function handleNotification(type:String, ?data:Dynamic):Void
@@ -32,10 +31,12 @@ class TodoFormMediator extends Mediator<TodoForm>
 	{
 		view.lock();
 
-		createTodoSignal.complete.addOnce(function(success:Bool)
-		{
-			view.unlock();
-		});
+		createTodoSignal.complete.addOnce(createTodoComplete);
 		createTodoSignal.dispatch(text);
+	}
+
+	private function createTodoComplete (success:Bool):Void
+	{
+		view.unlock();
 	}
 }

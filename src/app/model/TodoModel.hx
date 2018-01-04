@@ -14,7 +14,7 @@ class TodoModel extends Actor
 
 	public function findTodoByID(value:Int):Todo { for(todo in _data) { if(todo.id == value) return todo; } return null; }
 
-	public function getTodoByIndex(value:Int):Todo { return _data[value]; }
+	public function getTodoByIndex(value:Int):Todo { return _data.length > value ? _data[value] : null; }
 	public function getTodoPosition(todo:Todo):Int { return _data.indexOf(todo); }
 	public function getTodos():Array<Todo> { return _data; }
 

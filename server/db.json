@@ -2,7 +2,7 @@
   "todos": [
     {
       "text": "Learn to livehjhjjhjjhhh",
-      "completed": false,
+      "completed": true,
       "createdAt": -1,
       "id": 17
     },
@@ -13,21 +13,10 @@
       "id": 18
     },
     {
-      "text": "ds",
-      "completed": true,
-      "createdAt": -1,
-      "id": 19
-    },
-    {
       "text": "dsdsd",
-      "completed": true,
+      "completed": false,
       "createdAt": -1,
       "id": 20
-    },
-    {
-      "text": "dsdasdsad",
-      "completed": false,
-      "id": 21
     },
     {
       "text": "dsdadsad",
@@ -37,6 +26,7 @@
     {
       "text": "iiiii",
       "completed": false,
+      "createdAt": -1,
       "id": 23
     },
     {
@@ -53,6 +43,7 @@
     {
       "text": "New todo",
       "completed": false,
+      "createdAt": -1,
       "id": 27
     }
   ]

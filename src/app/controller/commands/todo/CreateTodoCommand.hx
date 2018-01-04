@@ -1,19 +1,19 @@
 package app.controller.commands.todo;
-import app.controller.signals.InfoPopupMediatorNotificationSignal;
 import app.controller.signals.todoform.CreateTodoSignal;
 import app.controller.signals.TodoFormMediatorNotificationSignal;
 import app.controller.signals.TodoListMediatorNotificationSignal;
+import app.model.MessageModel;
 import app.model.TodoModel;
-import valueObject.Todo;
 import enums.strings.MessageStrings;
 import mmvc.impl.Command;
+import valueObject.Todo;
 
 class CreateTodoCommand extends Command
 {
-	@inject public var infoPopupMediatorSignal:InfoPopupMediatorNotificationSignal;
 	@inject public var todoListMediatorSignal:TodoListMediatorNotificationSignal;
 	@inject public var todoFormMediatorSignal:TodoFormMediatorNotificationSignal;
 
+	@inject public var messageModel:MessageModel;
 	@inject public var todoModel:TodoModel;
 	@inject public var text:String;
 
@@ -40,10 +40,7 @@ class CreateTodoCommand extends Command
 			createSignal.complete.dispatch(false);
 		}
 
-		infoPopupMediatorSignal.dispatch(
-			InfoPopupMediatorNotificationSignal.SHOW_INFO,
-			message
-		);
+		messageModel.addMessage(message);
 	}
 
 	private function createTodoCallback(todoVO:Todo = null):Void
@@ -63,12 +60,7 @@ class CreateTodoCommand extends Command
 			);
 		}
 
-		infoPopupMediatorSignal.dispatch(
-			InfoPopupMediatorNotificationSignal.SHOW_INFO,
-			success
-				? MessageStrings.TODO_SAVED
-				: MessageStrings.PROBLEM_SAVING_TODO
-		);
+		messageModel.addMessage(success ? MessageStrings.TODO_SAVED	: MessageStrings.PROBLEM_SAVING_TODO);
 
 		createSignal.complete.dispatch(success);
 	}

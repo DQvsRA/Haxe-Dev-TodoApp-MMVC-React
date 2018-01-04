@@ -1,4 +1,5 @@
 package app.view.components;
+import msignal.Signal.Signal1;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent;
@@ -6,91 +7,65 @@ import react.React;
 
 class TodoForm extends MediatedComponent<MediatedProps, TodoFormState, Refs>
 {
-	private static var PROPS_BUTTON_ADD = {
-		children: "Add",
-		onClick: null,
-		className: ""
-	}
-
-	private static var PROPS_INPUT_TEXT = {
-		type: "text",
-		onChange: null,
-		onKeyPress: null,
-		value: "",
-		className: ""
-	};
-
-	public var addTodoButtonClickHandler:String->Void;
+	public var addTodoButtonClickSignal:Signal1<String> = new Signal1<String>();
 
 	override function defaultState()
 	{
 		return {text:"", isLocked:false};
 	}
 
-	private function HandleInputOnChange(event)
+	private function handleInputOnChange(event)
 	{
 		this.setState({text: event.target.value});
 	}
 
-	private function HandleAddTodoButtonClick(event)
+	private function handleAddTodoButtonClick(event)
 	{
-		if(addTodoButtonClickHandler != null) {
-			addTodoButtonClickHandler(this.state.text);
-		}
+		addTodoButtonClickSignal.dispatch(state.text);
 	}
 
 	private function handleEnter(event)
 	{
 		if(event.key == "Enter") {
-			HandleAddTodoButtonClick(event);
+			handleAddTodoButtonClick(event);
 		}
 	}
 
 	override public function render()
 	{
-		return React.createElement('div',
-		{
-			className: getClassName()
-		},
-			renderInputText(),
-			renderButton()
-		);
+		return React.createElement('div', {className: getClassName()}, renderInputText(), renderButton());
 	}
 
 	override public function getClassName():String
 	{
-		return "todo-form" + (this.state.isLocked ? " locked" : "");
+		return super.getClassName() + (state.isLocked ? "-locked" : "");
 	}
 
 	private function renderButton()
 	{
-		PROPS_BUTTON_ADD.onClick = HandleAddTodoButtonClick;
-		PROPS_BUTTON_ADD.className = "todo-form-btn-add" + (this.state.isLocked ? " locked" : "");
-		return React.createElement("button", PROPS_BUTTON_ADD);
+		return React.createElement("button", {onClick:handleAddTodoButtonClick, className:(getClassName() + "-btn-add")},
+			"Add");
 	}
 
 	private function renderInputText()
 	{
-		PROPS_INPUT_TEXT.onChange = HandleInputOnChange;
-		PROPS_INPUT_TEXT.value = this.state.text;
-		PROPS_INPUT_TEXT.className = "todo-form-inp-text" + (this.state.isLocked ? " locked" : "");
-		PROPS_INPUT_TEXT.onKeyPress = handleEnter;
-		return React.createElement("input", PROPS_INPUT_TEXT);
+		return React.createElement("input", {type:"text", onChange:handleInputOnChange, onKeyPress:handleEnter,
+			value:state.text, className:(getClassName() + "-inp-txt")});
 	}
 
 	public function lock():Void
 	{
-		this.setState({isLocked:true});
+		setState({isLocked:true});
 	}
 
 	public function unlock():Void
 	{
-		this.setState({isLocked:false});
+		setState({isLocked:false});
 	}
 
 	public function clear():Void
 	{
-		this.setState({text:""});
+		setState({text:""});
 	}
 }
 

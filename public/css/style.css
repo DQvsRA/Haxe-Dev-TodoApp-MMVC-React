@@ -9,11 +9,24 @@ body, html {
 	color: #fcfcfc;
 }
 
-.todo-form {
+.TodoForm {
 	text-align: center;
 }
 
-.todo-form-inp-text {
+.TodoForm-locked {
+	pointer-events: none;
+}
+
+.TodoForm-btn-add {
+	height: 21px;
+}
+
+.TodoForm-locked-btn-add {
+	opacity : 0.5;
+	color: red;
+}
+
+.TodoForm-inp-txt {
 	width: 50%;
 	margin: 0 1em 1.5em 1em;
 	padding: 0.25em;
@@ -21,29 +34,15 @@ body, html {
 	min-width: 300px;
 }
 
-.todo-form .locked {
-	pointer-events: none;
-}
-
-.todo-form-btn-add {
-	height: 21px;
-}
-
-.todo-form-btn-add.locked {
-	opacity : 0.5;
-	color: red;
-}
-
-.todo-form-inp-text.locked {
+.TodoForm-locked-inp-txt {
 	opacity : 0.5;
 }
 
-.todo-list.locked {
-	opacity : 0.5;
-	pointer-events: none;
+.TodoList {
+
 }
 
-.todo-list-item {
+.TodoListItem {
 	margin: 0.75em 0.5em;
 	border: solid 1px #333333;
 	display: flex;
@@ -51,16 +50,16 @@ body, html {
 	justify-content: stretch;
 }
 
-.todo-list-item.locked {
+.TodoListItem.locked {
 	opacity : 0.5;
 	pointer-events: none;
 }
 
-.todo-list-item-toggle {
+.TodoListItem .toggle {
 	margin: 1em;
 }
 
-.todo-list-item-btn {
+.TodoListItem .button {
 	position: relative;
 	display: inline-block;
 	padding: 0.25em;
@@ -70,7 +69,7 @@ body, html {
 	border-radius: 4px;
 }
 
-.todo-list-item-input {
+.TodoListItem .text {
 	border: none;
 	background: none;
 	color: white;
@@ -83,17 +82,17 @@ body, html {
 	margin-left: 0.5em;
 }
 
-.todo-list-item-input.completed {
+.TodoListItem .text.completed {
 	text-decoration: line-through;
 	text-decoration-color: #00ff00;
 	pointer-events: none;
 }
 
-.todo-list-item-input:focus {
+.TodoListItem .text:focus {
 	outline-width: 1px;
 }
 
-.popup-info {
+.InfoPopup {
 	position: fixed;
 	background: rebeccapurple;
 	text-align: center;
@@ -102,7 +101,7 @@ body, html {
 	right: -100%;
 }
 
-.popup-info-animation {
+.InfoPopup-animation {
 	animation-name: bounce;
 	animation-duration: 1s;
 	animation-iteration-count: 2;

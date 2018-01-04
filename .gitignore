@@ -5,3 +5,7 @@ package-lock.json
 /.idea/
 /TodoApplication.iml
 /libs
+*/*.iml
+*.iml
+/public/js/todo-haxe-react.js
+/public/js/todo-haxe-react.js.map

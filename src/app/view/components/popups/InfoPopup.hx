@@ -1,4 +1,5 @@
 package app.view.components.popups;
+import msignal.Signal.Signal0;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent;
@@ -7,23 +8,24 @@ import react.React;
 
 class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 {
-	public static var ID:String = "infoPopup";
-	public static var ANIMATION_CLASS_NAME:String = "popup-info-animation";
-
-	public var handleAnimationComplete:Void->Void;
+	public var animationCompleteSignal:Signal0 = new Signal0();
 
 	public var domInfoPopup:DivElement;
 
 	public var message(default, set):String = "";
-
 	private function set_message(value:String):String
 	{
 		if (message != value)
 		{
 			message = value;
-			setState({ message: value });
+			setState({message:value});
 		}
 		return value;
+	}
+
+	private var animationClassName(get, null):String;
+	private function get_animationClassName():String {
+		return getClassName() + "-animation";
 	}
 
 	override function defaultState()
@@ -33,23 +35,13 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 
 	override public function render()
 	{
-		return React.createElement('div', {
-			key: ID,
-			className: getClassName(),
-			onAnimationEnd: onAnimationEnd,
-			ref:function(dom) { this.domInfoPopup = dom; },
-			children: this.state.message
-		});
+		return React.createElement('div', {className:getClassName(), onAnimationEnd:onAnimationEnd,
+			ref:function(dom) { domInfoPopup = dom; }, children:state.message});
 	}
 
 	public function isActive():Bool
 	{
 		return state.message.length > 0;
-	}
-
-	override function getClassName():String
-	{
-		return "popup-info";
 	}
 
 	override function componentDidUpdate(prevProps:MediatedProps, prevState:InfoPopupState):Void
@@ -58,8 +50,9 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 		{
 			domInfoPopup.addEventListener("animationend", handlerAnimationEnd, false);
 
-			haxe.Timer.delay(function() {
-				domInfoPopup.classList.add(ANIMATION_CLASS_NAME);
+			haxe.Timer.delay(function()
+			{
+				domInfoPopup.classList.add(animationClassName);
 			}, 0);
 		}
 	}
@@ -72,9 +65,8 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 
 	private function handlerAnimationEnd()
 	{
-		domInfoPopup.classList.remove(ANIMATION_CLASS_NAME);
-		if(handleAnimationComplete!=null)
-			handleAnimationComplete();
+		domInfoPopup.classList.remove(animationClassName);
+		animationCompleteSignal.dispatch();
 	}
 
 	function onAnimationEnd()

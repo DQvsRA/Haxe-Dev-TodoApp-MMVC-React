@@ -1,6 +1,7 @@
 package app.view.components.todolist;
-import app.view.components.TodoList.ActionCallback;
-import enums.actions.TodoAction;
+import app.controller.signals.todolist.action.ToggleTodoActionSignal;
+import app.controller.signals.todolist.UpdateTodoSignal;
+import app.controller.signals.todolist.DeleteTodoSignal;
 import core.view.Component.Props;
 import core.view.Component.Refs;
 import core.view.Component.State;
@@ -9,47 +10,15 @@ import react.React;
 
 class TodoListItem extends Component<TodoListItemProps, TodoListItemState, Refs>
 {
-	private static var PROPS_TOGGLE = {
-		type: "checkbox",
-		checked: false,
-		className: "todo-list-item-toggle",
-		onChange: null
-	};
-
-	private static var PROPS_TEXT = {
-		type: "text",
-		className: "",
-		onChange: null,
-		value: "",
-	}
-
-	private static var PROPS_BUTTON = {
-		children: "",
-		className: "todo-list-item-btn",
-		onClick: null
-	}
-
 	override function defaultState()
 	{
-		return ({
-			text: props.text,
-			isLocked: false,
-			isEditing: false,
-			isCompleted: props.isCompleted
-		}:TodoListItemState);
+		return ({text:props.text, isLocked:false, isEditing:false, isCompleted:props.isCompleted}:TodoListItemState);
 	}
 
 	override public function render()
 	{
-		return React.createElement('div',
-		{
-			key: props.key,
-			className: getClassName()
-		},
-			renderToggle(),
-			renderButton(),
-			renderTextField()
-		);
+		return React.createElement('div', {key:props.key, className:getClassName()}, renderToggle(), renderButton(),
+			renderTextField());
 	}
 
 	override public function shouldComponentUpdate(nextProps:TodoListItemProps, nextState:TodoListItemState):Bool
@@ -65,62 +34,43 @@ class TodoListItem extends Component<TodoListItemProps, TodoListItemState, Refs>
 
 	override public function getClassName():String
 	{
-		return "todo-list-item" + (this.state.isLocked ? " locked" : "");
+		return super.getClassName() + (state.isLocked ? " locked" : "");
 	}
 
 	private function renderButton()
 	{
-		PROPS_BUTTON.children = this.state.isEditing ? "Update" : "Delete";
-		PROPS_BUTTON.onClick = handleButton;
-		return React.createElement("button", PROPS_BUTTON);
+		return React.createElement("button", {className:"button", onClick:handleButton},
+			(state.isEditing ? "Update" : "Delete"));
 	}
 
 	private function renderTextField()
 	{
-		PROPS_TEXT.onChange = handleChange;
-		PROPS_TEXT.value = this.state.text;
-		PROPS_TEXT.className = "todo-list-item-input" + (this.state.isCompleted ? " completed" : "");
-		return React.createElement("input", PROPS_TEXT);
+		return React.createElement("input", {type:"text",
+			className:("text" + (state.isCompleted ? " completed" : "")), onChange:handleChange,
+			value: state.text});
 	}
 
 	private function renderToggle()
 	{
-		PROPS_TOGGLE.checked = this.state.isCompleted;
-		PROPS_TOGGLE.onChange = handleToggle;
-		return React.createElement("input", PROPS_TOGGLE);
+		return React.createElement("input", {type:"checkbox", checked:state.isCompleted,
+			className:"toggle", onChange:handleToggle});
 	}
 
 	private function handleChange(event)
 	{
-		this.setState({
-			text: event.target.value,
-			isEditing: event.target.value != this.props.text,
-		});
+		setState({text:event.target.value, isEditing:(event.target.value != props.text)});
 	}
 
 	private function handleButton():Void
 	{
-		var index:Int = this.props.index;
-		var action:TodoAction = TodoAction.DELETE;
-		var data = null;
-
-		if(this.state.isEditing) {
-			action = TodoAction.UPDATE;
-			data = this.state.text;
-		}
-
 		lock();
 
-		this.props.actionHandler(index, action, function(success:Bool):Void
-		{
-			if(action == TodoAction.UPDATE)
-			{
-				this.setState({
-					isEditing: false,
-					isLocked: false,
-				});
-			}
-		}, data);
+		if(state.isEditing) {
+			props.updateActionSignal.complete.addOnce(callbackUpdateAction);
+			props.updateActionSignal.dispatch(props.index, state.text);
+		} else {
+			props.deleteActionSignal.dispatch(props.index);
+		}
 	}
 
 	private function handleToggle(event):Void
@@ -129,24 +79,25 @@ class TodoListItem extends Component<TodoListItemProps, TodoListItemState, Refs>
 
 		lock();
 
-		this.props.actionHandler(
-			this.props.index,
-			TodoAction.TOGGLE,
-			function(success:Bool):Void
-			{
-				this.setState({
-					isLocked: false,
-					isCompleted: !this.state.isCompleted
-				});
-			}
-		);
+		props.toggleActionSignal.complete.addOnce(callbackToggleAction);
+		props.toggleActionSignal.dispatch(props.index);
+	}
+
+	private function callbackToggleAction(success:Bool):Void
+	{
+		if(success) {
+			setState({isLocked: false, isCompleted: !state.isCompleted});
+		}
+	}
+
+	private function callbackUpdateAction(success:Bool):Void
+	{
+		setState({isEditing: false, isLocked: false});
 	}
 
 	private function lock():Void
 	{
-		this.setState({
-			isLocked: true,
-		});
+		setState({isLocked: true});
 	}
 }
 
@@ -154,7 +105,9 @@ typedef TodoListItemProps = {>Props,
 	var text:String;
 	var index:Int;
 	var isCompleted:Bool;
-	var actionHandler:Int->TodoAction->?ActionCallback->?Dynamic->Void;
+	var toggleActionSignal:ToggleTodoActionSignal;
+	var deleteActionSignal:DeleteTodoSignal;
+	var updateActionSignal:UpdateTodoSignal;
 }
 
 typedef TodoListItemState = {>State,
