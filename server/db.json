@@ -8,7 +8,7 @@
     },
     {
       "text": "New one",
-      "completed": false,
+      "completed": true,
       "createdAt": -1,
       "id": 18
     },
@@ -31,7 +31,8 @@
     },
     {
       "text": "dobrin",
-      "completed": false,
+      "completed": true,
+      "createdAt": -1,
       "id": 24
     },
     {
@@ -42,7 +43,7 @@
     },
     {
       "text": "New todo",
-      "completed": false,
+      "completed": true,
       "createdAt": -1,
       "id": 27
     }

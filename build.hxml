@@ -3,6 +3,7 @@
 -D react_global
 -debug
 -lib msignal
+-lib minject
 -lib react
 -lib yloader
 -lib mmvc
