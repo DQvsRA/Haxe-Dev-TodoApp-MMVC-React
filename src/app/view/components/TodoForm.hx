@@ -33,12 +33,8 @@ class TodoForm extends MediatedComponent<MediatedProps, TodoFormState, Refs>
 
 	override public function render()
 	{
-		return React.createElement('div', {className: getClassName()}, renderInputText(), renderButton());
-	}
-
-	override public function getClassName():String
-	{
-		return super.getClassName() + (state.isLocked ? "-locked" : "");
+		var lockedClassName = (state.isLocked ? "-locked" : "");
+		return React.createElement('div', {className: getClassName() + lockedClassName}, renderInputText(), renderButton());
 	}
 
 	private function renderButton()

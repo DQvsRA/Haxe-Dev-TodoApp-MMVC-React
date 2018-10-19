@@ -10,15 +10,15 @@ import valueObject.Todo;
 
 class CreateTodoCommand extends Command
 {
-	@inject public var todoListMediatorSignal:TodoListMediatorNotificationSignal;
-	@inject public var todoFormMediatorSignal:TodoFormMediatorNotificationSignal;
+	@inject public var todoListMediatorNotificationSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoFormMediatorNotificationSignal:TodoFormMediatorNotificationSignal;
 
 	@inject public var messageModel:MessageModel;
 	@inject public var todoModel:TodoModel;
 	@inject public var text:String;
 
-	private var createSignal(get, null):CreateTodoSignal;
-	private function get_createSignal():CreateTodoSignal{
+	private var createTodoSignal(get, null):CreateTodoSignal;
+	private function get_createTodoSignal():CreateTodoSignal{
 		return cast signal;
 	}
 
@@ -37,7 +37,7 @@ class CreateTodoCommand extends Command
 		else
 		{
 			message = MessageStrings.EMPTY_TODO;
-			createSignal.complete.dispatch(false);
+			createTodoSignal.complete.dispatch(false);
 		}
 
 		messageModel.addMessage(message);
@@ -49,12 +49,12 @@ class CreateTodoCommand extends Command
 
 		if(success)
 		{
-			todoListMediatorSignal.dispatch(
+			todoListMediatorNotificationSignal.dispatch(
 				TodoListMediatorNotificationSignal.SETUP_TODOS,
 				todoModel.getTodos()
 			);
 
-			todoFormMediatorSignal.dispatch(
+			todoFormMediatorNotificationSignal.dispatch(
 				TodoFormMediatorNotificationSignal.CLEAR_FORM,
 				null
 			);
@@ -62,6 +62,6 @@ class CreateTodoCommand extends Command
 
 		messageModel.addMessage(success ? MessageStrings.TODO_SAVED	: MessageStrings.PROBLEM_SAVING_TODO);
 
-		createSignal.complete.dispatch(success);
+		createTodoSignal.complete.dispatch(success);
 	}
 }

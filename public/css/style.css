@@ -9,21 +9,17 @@ body, html {
 	color: #fcfcfc;
 }
 
-.TodoForm {
+.TodoForm, .TodoForm-locked {
 	text-align: center;
 }
 
 .TodoForm-locked {
 	pointer-events: none;
+    opacity : 0.5;
 }
 
 .TodoForm-btn-add {
 	height: 21px;
-}
-
-.TodoForm-locked-btn-add {
-	opacity : 0.5;
-	color: red;
 }
 
 .TodoForm-inp-txt {
@@ -34,12 +30,8 @@ body, html {
 	min-width: 300px;
 }
 
-.TodoForm-locked-inp-txt {
-	opacity : 0.5;
-}
-
 .TodoList {
-
+    margin: 1rem;
 }
 
 .TodoListItem {
