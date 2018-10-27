@@ -1,4 +1,5 @@
 package app.view.mediators;
+
 import app.model.MessageModel;
 import app.view.components.popups.InfoPopup;
 import mmvc.impl.Mediator;

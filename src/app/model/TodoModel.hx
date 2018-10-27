@@ -1,6 +1,6 @@
 package app.model;
 import app.model.service.ServerService;
-import valueObject.Todo;
+import data.vo.Todo;
 import enums.network.ServerAPI;
 import mmvc.impl.Actor;
 import yloader.enums.Method;
@@ -44,7 +44,7 @@ class TodoModel extends Actor
 
 	public function updateTodo(index:Int, text:String, callback:Bool -> Void):Void
 	{
-		trace("-> updateTodo: id = " + index + " text = " + text);
+		trace("-> updateTodo: index = " + index + " text = " + text);
 
 		var todoVO:Todo = getTodoByIndex(index);
 		_serverService.performRequest(

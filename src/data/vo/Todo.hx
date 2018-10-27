@@ -1,4 +1,4 @@
-package valueObject;
+package data.vo;
 
 class Todo
 {

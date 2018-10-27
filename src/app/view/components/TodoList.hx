@@ -1,56 +1,63 @@
 package app.view.components;
-import app.controller.signals.todolist.action.ToggleTodoActionSignal;
-import app.controller.signals.todolist.UpdateTodoSignal;
-import app.controller.signals.todolist.DeleteTodoSignal;
-import app.controller.signals.todolist.ToggleTodoSignal;
-import valueObject.Todo;
+
 import app.view.components.todolist.TodoListItem;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent.MediatedProps;
 import core.view.MediatedComponent;
 import react.React;
+import react.ReactComponent.ReactElement;
 
 typedef ActionCallback = Bool->Void;
 
 class TodoList extends MediatedComponent<MediatedProps, TodoListState, Refs>
 {
-	public var toggleActionSignal:ToggleTodoActionSignal = new ToggleTodoActionSignal();
+	public function new(props) {
+		super(props);
+		event.add( handleTodoListItemEvent );
+	}
 
-	public var deleteActionSignal:DeleteTodoSignal;
-	public var updateActionSignal:UpdateTodoSignal;
-
-	public function setTodos(value:Array<Todo>)
+	public function setTodos(value:Array<ReactElement>)
 	{
-		this.setState({todos:value});
+		this.setState(cast ({todos:value}:TodoListState));
 	}
 
 	override function defaultState()
 	{
-		return {todos:[]};
+		return cast ({todos:[]}:TodoListState);
 	}
 
 	override public function render()
 	{
-		return React.createElement('div', {className:getClassName()}, constructTodoList());
+		var length = state.todos.length;
+		return React.createElement('div', {className:getClassName()},
+			(length > 0 ? state.todos : renderLoading()));
 	}
 
-	private function constructTodoList()
+	function renderLoading() {
+		return React.createElement("div", {className:"loading"}, "LOADING ...");
+	}
+
+	public function createTodoListItem(index, id, text, completed)
 	{
-		var result = [];
-		var index:Int = 0;
-		for (todo in state.todos)
-		{
-			result.push(React.createElement(TodoListItem, {key:todo.id, text:todo.text, index:index++,
-				isCompleted:todo.completed, toggleActionSignal:toggleActionSignal, deleteActionSignal:deleteActionSignal,
-				updateActionSignal:updateActionSignal}));
-		}
-		return result;
+		return React.createElement(
+			TodoListItem, {
+				key:id,
+				text:text,
+				index:index,
+				isCompleted:completed,
+				event:event
+			}
+		);
+	}
+
+	private function handleTodoListItemEvent(event:String, data:Dynamic):Void {
+		trace("event : " + event);
 	}
 }
 
 typedef TodoListState = {>State,
-	var todos:Array<Todo>;
+	var todos:Array<ReactElement>;
 }
 
 

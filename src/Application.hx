@@ -15,8 +15,8 @@ class Application extends Component<Props, State, Refs> implements IViewContaine
 {
 	private var _context:ApplicationContext;
 
-	public var viewAdded:Dynamic -> Void;
-	public var viewRemoved:Dynamic -> Void;
+	public var viewAdded:Dynamic->Void;
+	public var viewRemoved:Dynamic->Void;
 
 	var _isAdded:Bool;
 

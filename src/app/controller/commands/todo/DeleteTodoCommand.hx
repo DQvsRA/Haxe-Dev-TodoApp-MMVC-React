@@ -8,7 +8,7 @@ import mmvc.impl.Command;
 
 class DeleteTodoCommand extends Command
 {
-	@inject public var todoListNotificationSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoListMediatorNotificationSignal:TodoListMediatorNotificationSignal;
 
 	@inject public var messageModel:MessageModel;
 	@inject public var todoModel:TodoModel;
@@ -22,12 +22,15 @@ class DeleteTodoCommand extends Command
 
 	private function deleteTodoCallback(success:Bool):Void
 	{
-		var deleteSignal:DeleteTodoSignal = cast signal;
 		var message:String = success ? MessageStrings.DELETE_ITEM_SUCCESS : MessageStrings.PROBLEM_DELETE_ITEM;
-
-		todoListNotificationSignal.dispatch(TodoListMediatorNotificationSignal.SETUP_TODOS, todoModel.getTodos());
 		messageModel.addMessage(StringTools.replace(message, "%id%", Std.string(index + 1)));
 
+		var deleteSignal:DeleteTodoSignal = cast signal;
 		deleteSignal.complete.dispatch(success);
+
+		todoListMediatorNotificationSignal.dispatch(
+			TodoListMediatorNotificationSignal.SETUP_TODOS,
+			todoModel.getTodos()
+		);
 	}
 }

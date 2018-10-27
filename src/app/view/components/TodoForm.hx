@@ -40,7 +40,7 @@ class TodoForm extends MediatedComponent<MediatedProps, TodoFormState, Refs>
 	private function renderButton()
 	{
 		return React.createElement("button", {onClick:handleAddTodoButtonClick, className:(getClassName() + "-btn-add")},
-			"Add");
+			"+");
 	}
 
 	private function renderInputText()

@@ -6,7 +6,7 @@ import app.model.MessageModel;
 import app.model.TodoModel;
 import enums.strings.MessageStrings;
 import mmvc.impl.Command;
-import valueObject.Todo;
+import data.vo.Todo;
 
 class CreateTodoCommand extends Command
 {

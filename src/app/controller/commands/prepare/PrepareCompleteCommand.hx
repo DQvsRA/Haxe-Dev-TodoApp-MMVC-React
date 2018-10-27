@@ -1,5 +1,5 @@
 package app.controller.commands.prepare;
-import valueObject.Todo;
+import data.vo.Todo;
 import haxe.ds.Vector;
 import app.controller.signals.TodoListMediatorNotificationSignal;
 import app.model.MessageModel;
@@ -12,7 +12,7 @@ class PrepareCompleteCommand extends Command
 	@inject public var todoModel:TodoModel;
 	@inject public var messageModel:MessageModel;
 
-	@inject public var todoListNotificationSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoListMediatorNotificationSignal:TodoListMediatorNotificationSignal;
 
 	override public function execute():Void
 	{
@@ -27,9 +27,9 @@ class PrepareCompleteCommand extends Command
 		trace("-> loadTodos: length = " + todos.length);
 		var message:String = MessageStrings.FAIL_TO_LOAD_DATA;
 
-		if(todos != null)
+		if (todos != null)
 		{
-			todoListNotificationSignal.dispatch(TodoListMediatorNotificationSignal.SETUP_TODOS, todos);
+			todoListMediatorNotificationSignal.dispatch(TodoListMediatorNotificationSignal.SETUP_TODOS, todos);
 			message = MessageStrings.DATA_READY;
 		}
 

@@ -8,7 +8,7 @@ import mmvc.impl.Command;
 
 class UpdateTodoCommand extends Command
 {
-	@inject public var todoListNotificationSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoListMediatorNotificationSignal:TodoListMediatorNotificationSignal;
 
 	@inject public var messageModel:MessageModel;
 	@inject public var todoModel:TodoModel;
@@ -33,10 +33,15 @@ class UpdateTodoCommand extends Command
 
 	private function updateTodoCallback(success:Bool):Void
 	{
-		var updateSignal:UpdateTodoSignal = cast signal;
 		var message:String = success ? MessageStrings.TODO_UPDATED : MessageStrings.PROBLEM_UPDATE_TODO;
-
 		messageModel.addMessage(StringTools.replace(message, "%id%", Std.string(index + 1)));
+
+		var updateSignal:UpdateTodoSignal = cast signal;
 		updateSignal.complete.dispatch(success);
+
+		todoListMediatorNotificationSignal.dispatch(
+			TodoListMediatorNotificationSignal.SETUP_TODOS,
+			todoModel.getTodos()
+		);
 	}
 }

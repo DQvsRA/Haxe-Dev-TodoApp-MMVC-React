@@ -5,11 +5,11 @@ import app.model.MessageModel;
 import app.model.TodoModel;
 import enums.strings.MessageStrings;
 import mmvc.impl.Command;
-import valueObject.Todo;
+import data.vo.Todo;
 
 class ToggleTodoCommand extends Command
 {
-	@inject public var todoListNotificationSignal:TodoListMediatorNotificationSignal;
+	@inject public var todoListMediatorNotificationSignal:TodoListMediatorNotificationSignal;
 
 	@inject public var messageModel:MessageModel;
 	@inject public var todoModel:TodoModel;
@@ -18,7 +18,7 @@ class ToggleTodoCommand extends Command
 
 	override public function execute():Void
 	{
-		trace("-> execute");
+		trace("-> execute | index = " + index);
 		todoModel.toggleTodo(index, toggleTodoCallback);
 	}
 
@@ -31,9 +31,14 @@ class ToggleTodoCommand extends Command
 		var todo:Todo = todoModel.getTodoByIndex(index);
 
 		messageModel.addMessage(StringTools.replace(StringTools.replace(message, "%id%", Std.string(index + 1)),
-				"%completed%", Std.string(todo.completed)));
+			"%completed%", Std.string(todo.completed)));
 
 		var toggleSignal:ToggleTodoSignal = cast signal;
 		toggleSignal.complete.dispatch(success);
+
+		todoListMediatorNotificationSignal.dispatch(
+			TodoListMediatorNotificationSignal.SETUP_TODOS,
+			todoModel.getTodos()
+		);
 	}
 }

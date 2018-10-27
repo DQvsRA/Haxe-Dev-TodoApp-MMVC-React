@@ -19,24 +19,35 @@ body, html {
 }
 
 .TodoForm-btn-add {
-	height: 21px;
+	height: 2rem;
+	width: 2rem;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: bold;
 }
 
 .TodoForm-inp-txt {
-	width: 50%;
-	margin: 0 1em 1.5em 1em;
-	padding: 0.25em;
-	max-width: 600px;
-	min-width: 300px;
+    font-size: 1.5rem;
+	width: 80%;
+    max-width: 600px;
+    min-width: 300px;
+	margin: 0 1rem 1.5rem 1rem;
+    border-radius: 4px;
+	padding: 0.25rem;
 }
 
 .TodoList {
     margin: 1rem;
 }
+.TodoList .loading {
+    text-align: center;
+}
 
 .TodoListItem {
-	margin: 0.75em 0.5em;
+	margin: 0.75rem 1rem;
+    padding: 0.25rem;
 	border: solid 1px #333333;
+    border-radius: 4px;
 	display: flex;
 	flex: auto;
 	justify-content: stretch;
@@ -48,17 +59,29 @@ body, html {
 }
 
 .TodoListItem .toggle {
-	margin: 1em;
+    width: 1rem;
+    height: 1rem;
+    margin: 0.5rem 0 0 0;
+}
+
+.TodoListItem .toggle.disabled {
+    pointer-events: none;
+    opacity: .5;
 }
 
 .TodoListItem .button {
 	position: relative;
 	display: inline-block;
-	padding: 0.25em;
-	margin-top: 0.5em;
-	width: 60px;
-	height: 21px;
-	border-radius: 4px;
+	width: 2rem;
+	height: 2rem;
+    font-size: 1rem;
+    margin-right: 1rem;
+
+	border-radius: 0.25rem;
+    vertical-align: middle;
+    color: #aaa;
+    background-color: #3a3a3a;
+    border-color: #888;
 }
 
 .TodoListItem .text {
@@ -78,10 +101,11 @@ body, html {
 	text-decoration: line-through;
 	text-decoration-color: #00ff00;
 	pointer-events: none;
+    color: #888;
 }
 
 .TodoListItem .text:focus {
-	outline-width: 1px;
+	outline-width: 0.1rem;
 }
 
 .InfoPopup {

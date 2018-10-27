@@ -1,5 +1,6 @@
 package core.view;
 
+import msignal.Signal.Signal2;
 import react.ReactComponent.ReactComponentOf;
 
 /**
@@ -27,6 +28,7 @@ class Component<TProps:Props, TState:State, TRefs:Refs> extends ReactComponentOf
 }
 
 typedef Props = {
+	@:optional var event:Signal2<String, Dynamic>;
     @:optional var className:String;
     @:optional var ref:Dynamic;
     @:optional var key:String;
