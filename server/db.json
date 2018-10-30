@@ -1,37 +1,9 @@
 {
   "todos": [
     {
-      "text": "www",
+      "text": "First Todo",
       "completed": false,
-      "createdAt": -1,
-      "id": 33
-    },
-    {
-      "text": "Super TODO",
-      "completed": false,
-      "createdAt": -1,
-      "id": 34
-    },
-    {
-      "text": "dasddssd",
-      "completed": false,
-      "createdAt": -1,
-      "id": 35
-    },
-    {
-      "text": "dadasdfasdf",
-      "completed": false,
-      "id": 36
-    },
-    {
-      "text": "faerqwr",
-      "completed": false,
-      "id": 37
-    },
-    {
-      "text": "hhghgjh",
-      "completed": false,
-      "id": 38
+      "id": 1
     }
   ]
 }

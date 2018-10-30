@@ -1,7 +1,8 @@
-package app.controller.signals;
+package app.controller.signals.notifications;
+
 import msignal.Signal;
 
-class TodoListMediatorNotificationSignal extends Signal2<String, Dynamic>
+class TodoListMediatorNotification extends Signal2<String, Dynamic>
 {
     private static var PREFIX(default, never):String = "todolist_mediator_notification_";
 

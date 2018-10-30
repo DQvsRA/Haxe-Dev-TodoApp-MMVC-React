@@ -1,8 +1,8 @@
 package app.controller.commands.prepare;
-import app.view.components.popups.InfoPopup;
+import app.view.components.popups.MessagePopup;
 import app.view.components.TodoForm;
 import app.view.components.TodoList;
-import app.view.mediators.InfoPopupMediator;
+import app.view.mediators.MessagePopupMediator;
 import app.view.mediators.TodoFormMediator;
 import app.view.mediators.TodoListMediator;
 import mmvc.impl.Command;
@@ -14,6 +14,6 @@ class PrepareViewCommand extends Command
 		trace("-> execute");
 		mediatorMap.mapView(TodoList, TodoListMediator);
 		mediatorMap.mapView(TodoForm, TodoFormMediator);
-		mediatorMap.mapView(InfoPopup, InfoPopupMediator);
+		mediatorMap.mapView(MessagePopup, MessagePopupMediator);
 	}
 }

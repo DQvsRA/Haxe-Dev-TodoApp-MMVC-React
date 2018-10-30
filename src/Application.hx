@@ -1,12 +1,12 @@
 package ;
+
 import app.ApplicationContext;
-import app.view.components.popups.InfoPopup;
+import app.view.components.popups.MessagePopup;
 import app.view.components.TodoForm;
 import app.view.components.TodoList;
 import core.interfaces.IApplication;
 import core.view.Component;
 import js.Browser.document;
-import js.Browser.window;
 import mmvc.api.IViewContainer;
 import react.React;
 import react.ReactDOM;
@@ -52,7 +52,7 @@ class Application extends Component<Props, State, Refs> implements IViewContaine
 			},
 			React.createElement(TodoForm, {root:this}),
 			React.createElement(TodoList, {root:this}),
-			React.createElement(InfoPopup, {root:this})
+			React.createElement(MessagePopup, {root:this})
 		);
 	}
 

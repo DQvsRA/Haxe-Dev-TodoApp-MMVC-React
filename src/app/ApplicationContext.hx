@@ -11,7 +11,6 @@ class ApplicationContext extends Context
 	public function new( contextView:IViewContainer = null, autoStartup:Bool = true )
 	{
 		commandMap.mapSignal(START_UP_SIGNAL, StartupCommand, true);
-
 		super(contextView, autoStartup);
 	}
 

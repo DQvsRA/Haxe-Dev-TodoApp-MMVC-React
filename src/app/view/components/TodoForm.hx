@@ -1,5 +1,6 @@
 package app.view.components;
-import msignal.Signal.Signal1;
+
+import enums.events.TodoFormEvent;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent;
@@ -7,28 +8,14 @@ import react.React;
 
 class TodoForm extends MediatedComponent<MediatedProps, TodoFormState, Refs>
 {
-	public var addTodoButtonClickSignal:Signal1<String> = new Signal1<String>();
-
 	override function defaultState()
 	{
 		return {text:"", isLocked:false};
 	}
 
-	private function handleInputOnChange(event)
+	private function handleAddTodoButtonClick()
 	{
-		this.setState({text: event.target.value});
-	}
-
-	private function handleAddTodoButtonClick(event)
-	{
-		addTodoButtonClickSignal.dispatch(state.text);
-	}
-
-	private function handleEnter(event)
-	{
-		if(event.key == "Enter") {
-			handleAddTodoButtonClick(event);
-		}
+		event.dispatch(TodoFormEvent.ADD_BUTTON_CLICKED, state.text);
 	}
 
 	override public function render()
@@ -39,14 +26,29 @@ class TodoForm extends MediatedComponent<MediatedProps, TodoFormState, Refs>
 
 	private function renderButton()
 	{
-		return React.createElement("button", {onClick:handleAddTodoButtonClick, className:(getClassName() + "-btn-add")},
-			"+");
+		var className = getClassName() + "-btn-add";
+		var onClick = handleAddTodoButtonClick;
+		return React.createElement("button", {onClick:onClick, className:className}, "+");
 	}
 
 	private function renderInputText()
 	{
+		var className = getClassName() + "-inp-txt";
 		return React.createElement("input", {type:"text", onChange:handleInputOnChange, onKeyPress:handleEnter,
-			value:state.text, className:(getClassName() + "-inp-txt")});
+			value:state.text, className:className});
+	}
+
+	private function handleInputOnChange(event)
+	{
+		if( state.isLocked == false )
+			this.setState({text: event.target.value});
+	}
+
+	private function handleEnter(event)
+	{
+		if(event.key == "Enter") {
+			handleAddTodoButtonClick();
+		}
 	}
 
 	public function lock():Void

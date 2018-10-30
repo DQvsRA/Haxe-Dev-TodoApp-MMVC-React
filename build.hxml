@@ -1,6 +1,7 @@
 -main Main
 -js public/js/todo-haxe-react.js
 -D react_global
+-D hxnodejs_no_version_warning
 -debug
 -lib msignal
 -lib minject

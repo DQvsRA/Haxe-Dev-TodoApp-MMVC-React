@@ -57,7 +57,7 @@ Application.prototype = $extend(core_view_Component.prototype,{
 	,render: function() {
 		var tmp = React.createElement(app_view_components_TodoForm,{ root : this});
 		var tmp1 = React.createElement(app_view_components_TodoList,{ root : this});
-		var tmp2 = React.createElement(app_view_components_popups_InfoPopup,{ root : this});
+		var tmp2 = React.createElement(app_view_components_popups_MessagePopup,{ root : this});
 		return React.createElement("div",{ key : "application", id : "app"},tmp,tmp1,tmp2);
 	}
 	,onViewAdded: function(view) {
@@ -203,6 +203,16 @@ $hxClasses["Std"] = Std;
 Std.__name__ = ["Std"];
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
+};
+Std.parseInt = function(x) {
+	var v = parseInt(x,10);
+	if(v == 0 && (HxOverrides.cca(x,1) == 120 || HxOverrides.cca(x,1) == 88)) {
+		v = parseInt(x);
+	}
+	if(isNaN(v)) {
+		return null;
+	}
+	return v;
 };
 var StringTools = function() { };
 $hxClasses["StringTools"] = StringTools;
@@ -469,7 +479,7 @@ app_ApplicationContext.__name__ = ["app","ApplicationContext"];
 app_ApplicationContext.__super__ = mmvc_impl_Context;
 app_ApplicationContext.prototype = $extend(mmvc_impl_Context.prototype,{
 	startup: function() {
-		haxe_Log.trace("-> Startup",{ fileName : "ApplicationContext.hx", lineNumber : 20, className : "app.ApplicationContext", methodName : "startup"});
+		haxe_Log.trace("-> Startup",{ fileName : "ApplicationContext.hx", lineNumber : 19, className : "app.ApplicationContext", methodName : "startup"});
 		this.START_UP_SIGNAL.dispatch();
 		this.START_UP_SIGNAL = null;
 	}
@@ -521,6 +531,41 @@ app_controller_commands_StartupCommand.prototype = $extend(mmvc_impl_Command.pro
 	}
 	,__class__: app_controller_commands_StartupCommand
 });
+var app_controller_commands_message_HiddenMessageCommand = function() {
+	mmvc_impl_Command.call(this);
+};
+$hxClasses["app.controller.commands.message.HiddenMessageCommand"] = app_controller_commands_message_HiddenMessageCommand;
+app_controller_commands_message_HiddenMessageCommand.__name__ = ["app","controller","commands","message","HiddenMessageCommand"];
+app_controller_commands_message_HiddenMessageCommand.__super__ = mmvc_impl_Command;
+app_controller_commands_message_HiddenMessageCommand.prototype = $extend(mmvc_impl_Command.prototype,{
+	execute: function() {
+		haxe_Log.trace("-> execute : messages = " + this.messageModel.getMessageQueueLength(),{ fileName : "HiddenMessageCommand.hx", lineNumber : 18, className : "app.controller.commands.message.HiddenMessageCommand", methodName : "execute"});
+		this.messageModel.isMessageAnimating = false;
+		if(this.messageModel.getMessageQueueLength() > 0) {
+			this.showMessageSignal.dispatch(this.messageModel.shiftMessageFromQueue());
+		}
+	}
+	,__class__: app_controller_commands_message_HiddenMessageCommand
+});
+var app_controller_commands_message_ShowMessageCommand = function() {
+	mmvc_impl_Command.call(this);
+};
+$hxClasses["app.controller.commands.message.ShowMessageCommand"] = app_controller_commands_message_ShowMessageCommand;
+app_controller_commands_message_ShowMessageCommand.__name__ = ["app","controller","commands","message","ShowMessageCommand"];
+app_controller_commands_message_ShowMessageCommand.__super__ = mmvc_impl_Command;
+app_controller_commands_message_ShowMessageCommand.prototype = $extend(mmvc_impl_Command.prototype,{
+	execute: function() {
+		haxe_Log.trace("-> execute : text = " + this.message,{ fileName : "ShowMessageCommand.hx", lineNumber : 17, className : "app.controller.commands.message.ShowMessageCommand", methodName : "execute"});
+		if(this.messageModel.isMessageAnimating == false) {
+			this.messageModel.isMessageAnimating = true;
+			this.messageModel.currentMessage = this.message;
+			this.messagePopupMediatorNotification.dispatch(app_controller_signals_notifications_MessagePopupMediatorNotification.SHOW_MESSAGE,this.messageModel.currentMessage);
+		} else {
+			this.messageModel.saveMessageInQueue(this.message);
+		}
+	}
+	,__class__: app_controller_commands_message_ShowMessageCommand
+});
 var app_controller_commands_prepare_PrepareCompleteCommand = function() {
 	mmvc_impl_Command.call(this);
 };
@@ -529,18 +574,16 @@ app_controller_commands_prepare_PrepareCompleteCommand.__name__ = ["app","contro
 app_controller_commands_prepare_PrepareCompleteCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_prepare_PrepareCompleteCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "PrepareCompleteCommand.hx", lineNumber : 19, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "execute"});
-		this.messageModel.addMessage(enums_strings_MessageStrings.PREPARING);
+		haxe_Log.trace("-> execute: ",{ fileName : "PrepareCompleteCommand.hx", lineNumber : 22, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "execute"});
 		this.todoModel.loadTodos($bind(this,this.callbackLoadTodosComplete));
 	}
 	,callbackLoadTodosComplete: function(todos) {
-		haxe_Log.trace("-> loadTodos: length = " + todos.length,{ fileName : "PrepareCompleteCommand.hx", lineNumber : 27, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "callbackLoadTodosComplete"});
-		var message = enums_strings_MessageStrings.FAIL_TO_LOAD_DATA;
-		if(todos != null) {
-			this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,todos);
-			message = enums_strings_MessageStrings.DATA_READY;
+		haxe_Log.trace("-> loadTodos: length = " + Std.string(todos != null),{ fileName : "PrepareCompleteCommand.hx", lineNumber : 29, className : "app.controller.commands.prepare.PrepareCompleteCommand", methodName : "callbackLoadTodosComplete"});
+		var isNotEmpty = todos != null;
+		if(isNotEmpty) {
+			this.ListTodoMediatorNotificationSignal.dispatch(app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS,todos);
 		}
-		this.messageModel.addMessage(message);
+		this.showMessageSignal.dispatch(isNotEmpty ? enums_strings_MessageStrings.DATA_READY : enums_strings_MessageStrings.FAIL_TO_LOAD_DATA);
 	}
 	,__class__: app_controller_commands_prepare_PrepareCompleteCommand
 });
@@ -552,11 +595,13 @@ app_controller_commands_prepare_PrepareControllerCommand.__name__ = ["app","cont
 app_controller_commands_prepare_PrepareControllerCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_prepare_PrepareControllerCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "PrepareControllerCommand.hx", lineNumber : 21, className : "app.controller.commands.prepare.PrepareControllerCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute",{ fileName : "PrepareControllerCommand.hx", lineNumber : 28, className : "app.controller.commands.prepare.PrepareControllerCommand", methodName : "execute"});
 		this.commandMap.mapSignal(this.createTodoSignal,app_controller_commands_todo_CreateTodoCommand);
 		this.commandMap.mapSignal(this.deleteTodoSignal,app_controller_commands_todo_DeleteTodoCommand);
 		this.commandMap.mapSignal(this.toggleTodoSignal,app_controller_commands_todo_ToggleTodoCommand);
 		this.commandMap.mapSignal(this.updateTodoSignal,app_controller_commands_todo_UpdateTodoCommand);
+		this.commandMap.mapSignal(this.showMessageSignal,app_controller_commands_message_ShowMessageCommand);
+		this.commandMap.mapSignal(this.hiddenMessageSignal,app_controller_commands_message_HiddenMessageCommand);
 	}
 	,__class__: app_controller_commands_prepare_PrepareControllerCommand
 });
@@ -568,13 +613,16 @@ app_controller_commands_prepare_PrepareInjectionCommand.__name__ = ["app","contr
 app_controller_commands_prepare_PrepareInjectionCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_prepare_PrepareInjectionCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "PrepareInjectionCommand.hx", lineNumber : 16, className : "app.controller.commands.prepare.PrepareInjectionCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute",{ fileName : "PrepareInjectionCommand.hx", lineNumber : 20, className : "app.controller.commands.prepare.PrepareInjectionCommand", methodName : "execute"});
 		this.injector.mapSingleton(app_controller_signals_todoform_CreateTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_ToggleTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_UpdateTodoSignal);
 		this.injector.mapSingleton(app_controller_signals_todolist_DeleteTodoSignal);
-		this.injector.mapSingleton(app_controller_signals_TodoListMediatorNotificationSignal);
-		this.injector.mapSingleton(app_controller_signals_TodoFormMediatorNotificationSignal);
+		this.injector.mapSingleton(app_controller_signals_message_ShowMessageSignal);
+		this.injector.mapSingleton(app_controller_signals_message_HiddenMessageSignal);
+		this.injector.mapSingleton(app_controller_signals_notifications_TodoListMediatorNotification);
+		this.injector.mapSingleton(app_controller_signals_notifications_TodoFormMediatorNotification);
+		this.injector.mapSingleton(app_controller_signals_notifications_MessagePopupMediatorNotification);
 		this.injector.mapSingleton(app_model_TodoModel);
 		this.injector.mapSingleton(app_model_MessageModel);
 	}
@@ -591,7 +639,7 @@ app_controller_commands_prepare_PrepareViewCommand.prototype = $extend(mmvc_impl
 		haxe_Log.trace("-> execute",{ fileName : "PrepareViewCommand.hx", lineNumber : 14, className : "app.controller.commands.prepare.PrepareViewCommand", methodName : "execute"});
 		this.mediatorMap.mapView(app_view_components_TodoList,app_view_mediators_TodoListMediator);
 		this.mediatorMap.mapView(app_view_components_TodoForm,app_view_mediators_TodoFormMediator);
-		this.mediatorMap.mapView(app_view_components_popups_InfoPopup,app_view_mediators_InfoPopupMediator);
+		this.mediatorMap.mapView(app_view_components_popups_MessagePopup,app_view_mediators_MessagePopupMediator);
 	}
 	,__class__: app_controller_commands_prepare_PrepareViewCommand
 });
@@ -602,33 +650,26 @@ $hxClasses["app.controller.commands.todo.CreateTodoCommand"] = app_controller_co
 app_controller_commands_todo_CreateTodoCommand.__name__ = ["app","controller","commands","todo","CreateTodoCommand"];
 app_controller_commands_todo_CreateTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_CreateTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
-	get_createTodoSignal: function() {
-		return this.signal;
-	}
-	,execute: function() {
-		haxe_Log.trace("-> execute : text = " + this.text,{ fileName : "CreateTodoCommand.hx", lineNumber : 27, className : "app.controller.commands.todo.CreateTodoCommand", methodName : "execute"});
+	execute: function() {
+		haxe_Log.trace("-> execute : text = " + this.text,{ fileName : "CreateTodoCommand.hx", lineNumber : 23, className : "app.controller.commands.todo.CreateTodoCommand", methodName : "execute"});
 		var isNotEmpty = this.text.length > 0;
-		var message;
 		if(isNotEmpty) {
-			message = enums_strings_MessageStrings.SAVING_NEW_TODO;
 			this.todoModel.createTodo(this.text,$bind(this,this.createTodoCallback));
 		} else {
-			message = enums_strings_MessageStrings.EMPTY_TODO;
-			this.get_createTodoSignal().complete.dispatch(false);
+			this.formTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoFormMediatorNotification.UNLOCK,null);
 		}
-		this.messageModel.addMessage(message);
+		this.showMessageSignal.dispatch(isNotEmpty ? enums_strings_MessageStrings.SAVING_NEW_TODO : enums_strings_MessageStrings.EMPTY_TODO);
 	}
 	,createTodoCallback: function(todoVO) {
 		var success = todoVO != null;
 		if(success) {
-			this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
-			this.todoFormMediatorNotificationSignal.dispatch(app_controller_signals_TodoFormMediatorNotificationSignal.CLEAR_FORM,null);
+			this.listTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS,this.todoModel.getTodos());
+			this.formTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoFormMediatorNotification.CLEAR,null);
 		}
-		this.messageModel.addMessage(success ? enums_strings_MessageStrings.TODO_SAVED : enums_strings_MessageStrings.PROBLEM_SAVING_TODO);
-		this.get_createTodoSignal().complete.dispatch(success);
+		this.showMessageSignal.dispatch(success ? enums_strings_MessageStrings.TODO_SAVED : enums_strings_MessageStrings.PROBLEM_SAVING_TODO);
+		this.formTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoFormMediatorNotification.UNLOCK,null);
 	}
 	,__class__: app_controller_commands_todo_CreateTodoCommand
-	,__properties__: {get_createTodoSignal:"get_createTodoSignal"}
 });
 var app_controller_commands_todo_DeleteTodoCommand = function() {
 	mmvc_impl_Command.call(this);
@@ -638,15 +679,13 @@ app_controller_commands_todo_DeleteTodoCommand.__name__ = ["app","controller","c
 app_controller_commands_todo_DeleteTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_DeleteTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute: id = " + this.index,{ fileName : "DeleteTodoCommand.hx", lineNumber : 19, className : "app.controller.commands.todo.DeleteTodoCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute: id = " + this.index,{ fileName : "DeleteTodoCommand.hx", lineNumber : 20, className : "app.controller.commands.todo.DeleteTodoCommand", methodName : "execute"});
 		this.todoModel.deleteTodo(this.index,$bind(this,this.deleteTodoCallback));
 	}
 	,deleteTodoCallback: function(success) {
 		var message = success ? enums_strings_MessageStrings.DELETE_ITEM_SUCCESS : enums_strings_MessageStrings.PROBLEM_DELETE_ITEM;
-		this.messageModel.addMessage(StringTools.replace(message,"%id%",Std.string(this.index + 1)));
-		var deleteSignal = this.signal;
-		deleteSignal.complete.dispatch(success);
-		this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
+		this.showMessageSignal.dispatch(StringTools.replace(message,"%id%",Std.string(this.index + 1)));
+		this.listTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS,this.todoModel.getTodos());
 	}
 	,__class__: app_controller_commands_todo_DeleteTodoCommand
 });
@@ -658,16 +697,16 @@ app_controller_commands_todo_ToggleTodoCommand.__name__ = ["app","controller","c
 app_controller_commands_todo_ToggleTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_ToggleTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute | index = " + this.index,{ fileName : "ToggleTodoCommand.hx", lineNumber : 21, className : "app.controller.commands.todo.ToggleTodoCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute | index = " + this.index,{ fileName : "ToggleTodoCommand.hx", lineNumber : 22, className : "app.controller.commands.todo.ToggleTodoCommand", methodName : "execute"});
 		this.todoModel.toggleTodo(this.index,$bind(this,this.toggleTodoCallback));
 	}
 	,toggleTodoCallback: function(success) {
-		var message = success ? enums_strings_MessageStrings.TODO_COMPETE : enums_strings_MessageStrings.PROBLEM_UPDATE_TODO;
+		this.extendAndShowMessage(success ? enums_strings_MessageStrings.TODO_COMPETE : enums_strings_MessageStrings.PROBLEM_UPDATE_TODO);
+		this.listTodoMediatorNotification.dispatch(app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS,this.todoModel.getTodos());
+	}
+	,extendAndShowMessage: function(message) {
 		var todo = this.todoModel.getTodoByIndex(this.index);
-		this.messageModel.addMessage(StringTools.replace(StringTools.replace(message,"%id%",Std.string(this.index + 1)),"%completed%",todo.completed == null ? "null" : "" + todo.completed));
-		var toggleSignal = this.signal;
-		toggleSignal.complete.dispatch(success);
-		this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
+		this.showMessageSignal.dispatch(StringTools.replace(StringTools.replace(message,"%id%",Std.string(this.index + 1)),"%completed%",todo.completed == null ? "null" : "" + todo.completed));
 	}
 	,__class__: app_controller_commands_todo_ToggleTodoCommand
 });
@@ -679,20 +718,18 @@ app_controller_commands_todo_UpdateTodoCommand.__name__ = ["app","controller","c
 app_controller_commands_todo_UpdateTodoCommand.__super__ = mmvc_impl_Command;
 app_controller_commands_todo_UpdateTodoCommand.prototype = $extend(mmvc_impl_Command.prototype,{
 	execute: function() {
-		haxe_Log.trace("-> execute",{ fileName : "UpdateTodoCommand.hx", lineNumber : 21, className : "app.controller.commands.todo.UpdateTodoCommand", methodName : "execute"});
+		haxe_Log.trace("-> execute",{ fileName : "UpdateTodoCommand.hx", lineNumber : 24, className : "app.controller.commands.todo.UpdateTodoCommand", methodName : "execute"});
 		var isNotEmpty = this.text.length > 0;
 		if(isNotEmpty) {
 			this.todoModel.updateTodo(this.index,this.text,$bind(this,this.updateTodoCallback));
 		} else {
-			this.messageModel.addMessage(enums_strings_MessageStrings.TODO_CANT_BE_UPDATED);
+			this.showMessageSignal.dispatch(enums_strings_MessageStrings.TODO_CANT_BE_UPDATED);
 		}
 	}
 	,updateTodoCallback: function(success) {
 		var message = success ? enums_strings_MessageStrings.TODO_UPDATED : enums_strings_MessageStrings.PROBLEM_UPDATE_TODO;
-		this.messageModel.addMessage(StringTools.replace(message,"%id%",Std.string(this.index + 1)));
-		var updateSignal = this.signal;
-		updateSignal.complete.dispatch(success);
-		this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS,this.todoModel.getTodos());
+		this.showMessageSignal.dispatch(StringTools.replace(message,"%id%",Std.string(this.index + 1)));
+		this.todoListMediatorNotificationSignal.dispatch(app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS,this.todoModel.getTodos());
 	}
 	,__class__: app_controller_commands_todo_UpdateTodoCommand
 });
@@ -785,17 +822,17 @@ msignal_Signal.prototype = {
 	,__class__: msignal_Signal
 	,__properties__: {get_numListeners:"get_numListeners"}
 };
-var msignal_Signal2 = function(type1,type2) {
-	msignal_Signal.call(this,[type1,type2]);
+var msignal_Signal0 = function() {
+	msignal_Signal.call(this);
 };
-$hxClasses["msignal.Signal2"] = msignal_Signal2;
-msignal_Signal2.__name__ = ["msignal","Signal2"];
-msignal_Signal2.__super__ = msignal_Signal;
-msignal_Signal2.prototype = $extend(msignal_Signal.prototype,{
-	dispatch: function(value1,value2) {
+$hxClasses["msignal.Signal0"] = msignal_Signal0;
+msignal_Signal0.__name__ = ["msignal","Signal0"];
+msignal_Signal0.__super__ = msignal_Signal;
+msignal_Signal0.prototype = $extend(msignal_Signal.prototype,{
+	dispatch: function() {
 		var slotsToProcess = this.slots;
 		while(slotsToProcess.nonEmpty) {
-			slotsToProcess.head.execute(value1,value2);
+			slotsToProcess.head.execute();
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
@@ -806,27 +843,18 @@ msignal_Signal2.prototype = $extend(msignal_Signal.prototype,{
 		if(once == null) {
 			once = false;
 		}
-		return new msignal_Slot2(this,listener,once,priority);
+		return new msignal_Slot0(this,listener,once,priority);
 	}
-	,__class__: msignal_Signal2
+	,__class__: msignal_Signal0
 });
-var app_controller_signals_TodoFormMediatorNotificationSignal = function(type1,type2) {
-	msignal_Signal2.call(this,type1,type2);
+var app_controller_signals_message_HiddenMessageSignal = function() {
+	msignal_Signal0.call(this);
 };
-$hxClasses["app.controller.signals.TodoFormMediatorNotificationSignal"] = app_controller_signals_TodoFormMediatorNotificationSignal;
-app_controller_signals_TodoFormMediatorNotificationSignal.__name__ = ["app","controller","signals","TodoFormMediatorNotificationSignal"];
-app_controller_signals_TodoFormMediatorNotificationSignal.__super__ = msignal_Signal2;
-app_controller_signals_TodoFormMediatorNotificationSignal.prototype = $extend(msignal_Signal2.prototype,{
-	__class__: app_controller_signals_TodoFormMediatorNotificationSignal
-});
-var app_controller_signals_TodoListMediatorNotificationSignal = function(type1,type2) {
-	msignal_Signal2.call(this,type1,type2);
-};
-$hxClasses["app.controller.signals.TodoListMediatorNotificationSignal"] = app_controller_signals_TodoListMediatorNotificationSignal;
-app_controller_signals_TodoListMediatorNotificationSignal.__name__ = ["app","controller","signals","TodoListMediatorNotificationSignal"];
-app_controller_signals_TodoListMediatorNotificationSignal.__super__ = msignal_Signal2;
-app_controller_signals_TodoListMediatorNotificationSignal.prototype = $extend(msignal_Signal2.prototype,{
-	__class__: app_controller_signals_TodoListMediatorNotificationSignal
+$hxClasses["app.controller.signals.message.HiddenMessageSignal"] = app_controller_signals_message_HiddenMessageSignal;
+app_controller_signals_message_HiddenMessageSignal.__name__ = ["app","controller","signals","message","HiddenMessageSignal"];
+app_controller_signals_message_HiddenMessageSignal.__super__ = msignal_Signal0;
+app_controller_signals_message_HiddenMessageSignal.prototype = $extend(msignal_Signal0.prototype,{
+	__class__: app_controller_signals_message_HiddenMessageSignal
 });
 var msignal_Signal1 = function(type) {
 	msignal_Signal.call(this,[type]);
@@ -852,6 +880,67 @@ msignal_Signal1.prototype = $extend(msignal_Signal.prototype,{
 		return new msignal_Slot1(this,listener,once,priority);
 	}
 	,__class__: msignal_Signal1
+});
+var app_controller_signals_message_ShowMessageSignal = function() {
+	msignal_Signal1.call(this,String);
+};
+$hxClasses["app.controller.signals.message.ShowMessageSignal"] = app_controller_signals_message_ShowMessageSignal;
+app_controller_signals_message_ShowMessageSignal.__name__ = ["app","controller","signals","message","ShowMessageSignal"];
+app_controller_signals_message_ShowMessageSignal.__super__ = msignal_Signal1;
+app_controller_signals_message_ShowMessageSignal.prototype = $extend(msignal_Signal1.prototype,{
+	__class__: app_controller_signals_message_ShowMessageSignal
+});
+var msignal_Signal2 = function(type1,type2) {
+	msignal_Signal.call(this,[type1,type2]);
+};
+$hxClasses["msignal.Signal2"] = msignal_Signal2;
+msignal_Signal2.__name__ = ["msignal","Signal2"];
+msignal_Signal2.__super__ = msignal_Signal;
+msignal_Signal2.prototype = $extend(msignal_Signal.prototype,{
+	dispatch: function(value1,value2) {
+		var slotsToProcess = this.slots;
+		while(slotsToProcess.nonEmpty) {
+			slotsToProcess.head.execute(value1,value2);
+			slotsToProcess = slotsToProcess.tail;
+		}
+	}
+	,createSlot: function(listener,once,priority) {
+		if(priority == null) {
+			priority = 0;
+		}
+		if(once == null) {
+			once = false;
+		}
+		return new msignal_Slot2(this,listener,once,priority);
+	}
+	,__class__: msignal_Signal2
+});
+var app_controller_signals_notifications_MessagePopupMediatorNotification = function(type1,type2) {
+	msignal_Signal2.call(this,type1,type2);
+};
+$hxClasses["app.controller.signals.notifications.MessagePopupMediatorNotification"] = app_controller_signals_notifications_MessagePopupMediatorNotification;
+app_controller_signals_notifications_MessagePopupMediatorNotification.__name__ = ["app","controller","signals","notifications","MessagePopupMediatorNotification"];
+app_controller_signals_notifications_MessagePopupMediatorNotification.__super__ = msignal_Signal2;
+app_controller_signals_notifications_MessagePopupMediatorNotification.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: app_controller_signals_notifications_MessagePopupMediatorNotification
+});
+var app_controller_signals_notifications_TodoFormMediatorNotification = function(type1,type2) {
+	msignal_Signal2.call(this,type1,type2);
+};
+$hxClasses["app.controller.signals.notifications.TodoFormMediatorNotification"] = app_controller_signals_notifications_TodoFormMediatorNotification;
+app_controller_signals_notifications_TodoFormMediatorNotification.__name__ = ["app","controller","signals","notifications","TodoFormMediatorNotification"];
+app_controller_signals_notifications_TodoFormMediatorNotification.__super__ = msignal_Signal2;
+app_controller_signals_notifications_TodoFormMediatorNotification.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: app_controller_signals_notifications_TodoFormMediatorNotification
+});
+var app_controller_signals_notifications_TodoListMediatorNotification = function(type1,type2) {
+	msignal_Signal2.call(this,type1,type2);
+};
+$hxClasses["app.controller.signals.notifications.TodoListMediatorNotification"] = app_controller_signals_notifications_TodoListMediatorNotification;
+app_controller_signals_notifications_TodoListMediatorNotification.__name__ = ["app","controller","signals","notifications","TodoListMediatorNotification"];
+app_controller_signals_notifications_TodoListMediatorNotification.__super__ = msignal_Signal2;
+app_controller_signals_notifications_TodoListMediatorNotification.prototype = $extend(msignal_Signal2.prototype,{
+	__class__: app_controller_signals_notifications_TodoListMediatorNotification
 });
 var app_controller_signals_todoform_CreateTodoSignal = function() {
 	this.complete = new msignal_Signal1();
@@ -903,34 +992,22 @@ mmvc_impl_Actor.prototype = {
 var app_model_MessageModel = function() {
 	this.isMessageAnimating = false;
 	this._messageStack = [];
-	this.messageAddedSignal = new msignal_Signal1();
 	mmvc_impl_Actor.call(this);
 };
 $hxClasses["app.model.MessageModel"] = app_model_MessageModel;
 app_model_MessageModel.__name__ = ["app","model","MessageModel"];
 app_model_MessageModel.__super__ = mmvc_impl_Actor;
 app_model_MessageModel.prototype = $extend(mmvc_impl_Actor.prototype,{
-	get_length: function() {
+	getMessageQueueLength: function() {
 		return this._messageStack.length;
 	}
-	,set_isMessageAnimating: function(value) {
-		if(this.isMessageAnimating != value) {
-			this.isMessageAnimating = value;
-			if(value == false && this._messageStack.length > 0) {
-				this.messageAddedSignal.dispatch(this._messageStack.shift());
-			}
-		}
-		return this.isMessageAnimating;
+	,shiftMessageFromQueue: function() {
+		return this._messageStack.shift();
 	}
-	,addMessage: function(text) {
-		if(this.isMessageAnimating == false) {
-			this.messageAddedSignal.dispatch(text);
-		} else {
-			this._messageStack.push(text);
-		}
+	,saveMessageInQueue: function(text) {
+		this._messageStack.push(text);
 	}
 	,__class__: app_model_MessageModel
-	,__properties__: {set_isMessageAnimating:"set_isMessageAnimating",get_length:"get_length"}
 });
 var app_model_TodoModel = function() {
 	this.SERVER_TODO_ROUTE = enums_network_ServerAPI.GATEWAY + enums_network_ServerAPI.ROUTE_TODOS;
@@ -1159,7 +1236,9 @@ app_view_components_TodoForm.prototype = $extend(core_view_MediatedComponent.pro
 		return { text : "", isLocked : false};
 	}
 	,handleInputOnChange: function(event) {
-		this.setState({ text : event.target.value});
+		if(this.state.isLocked == false) {
+			this.setState({ text : event.target.value});
+		}
 	}
 	,handleAddTodoButtonClick: function(event) {
 		this.addTodoButtonClickSignal.dispatch(this.state.text);
@@ -1219,15 +1298,14 @@ app_view_components_TodoList.prototype = $extend(core_view_MediatedComponent.pro
 	}
 	,__class__: app_view_components_TodoList
 });
-var app_view_components_popups_InfoPopup = function(props) {
-	this.message = "";
-	this.animationCompleteSignal = new msignal_Signal0();
+var app_view_components_popups_MessagePopup = function(props) {
+	this.message = "empty";
 	core_view_MediatedComponent.call(this,props);
 };
-$hxClasses["app.view.components.popups.InfoPopup"] = app_view_components_popups_InfoPopup;
-app_view_components_popups_InfoPopup.__name__ = ["app","view","components","popups","InfoPopup"];
-app_view_components_popups_InfoPopup.__super__ = core_view_MediatedComponent;
-app_view_components_popups_InfoPopup.prototype = $extend(core_view_MediatedComponent.prototype,{
+$hxClasses["app.view.components.popups.MessagePopup"] = app_view_components_popups_MessagePopup;
+app_view_components_popups_MessagePopup.__name__ = ["app","view","components","popups","MessagePopup"];
+app_view_components_popups_MessagePopup.__super__ = core_view_MediatedComponent;
+app_view_components_popups_MessagePopup.prototype = $extend(core_view_MediatedComponent.prototype,{
 	set_message: function(value) {
 		if(this.message != value) {
 			this.message = value;
@@ -1244,7 +1322,7 @@ app_view_components_popups_InfoPopup.prototype = $extend(core_view_MediatedCompo
 	,render: function() {
 		var _gthis = this;
 		return React.createElement("div",{ className : this.getClassName(), onAnimationEnd : $bind(this,this.onAnimationEnd), ref : function(dom) {
-			_gthis.domInfoPopup = dom;
+			_gthis._domInfoPopup = dom;
 		}, children : this.state.message});
 	}
 	,isActive: function() {
@@ -1253,24 +1331,24 @@ app_view_components_popups_InfoPopup.prototype = $extend(core_view_MediatedCompo
 	,componentDidUpdate: function(prevProps,prevState) {
 		var _gthis = this;
 		if(this.isActive()) {
-			this.domInfoPopup.addEventListener("animationend",$bind(this,this.handlerAnimationEnd),false);
+			this._domInfoPopup.addEventListener("animationend",$bind(this,this.handlerAnimationEnd),false);
 			haxe_Timer.delay(function() {
-				_gthis.domInfoPopup.classList.add(_gthis.get_animationClassName());
+				_gthis._domInfoPopup.classList.add(_gthis.get_animationClassName());
 			},0);
 		}
 	}
 	,componentWillUnmount: function() {
-		this.domInfoPopup.removeEventListener("animationend",$bind(this,this.handlerAnimationEnd));
+		this._domInfoPopup.removeEventListener("animationend",$bind(this,this.handlerAnimationEnd));
 		core_view_MediatedComponent.prototype.componentWillUnmount.call(this);
 	}
 	,handlerAnimationEnd: function() {
-		this.domInfoPopup.classList.remove(this.get_animationClassName());
-		this.animationCompleteSignal.dispatch();
+		this._domInfoPopup.classList.remove(this.get_animationClassName());
+		this.event.dispatch(enums_events_MessagePopupEvent.ANIMATION_ENDED,null);
 	}
 	,onAnimationEnd: function() {
-		haxe_Log.trace("ontransition end",{ fileName : "InfoPopup.hx", lineNumber : 74, className : "app.view.components.popups.InfoPopup", methodName : "onAnimationEnd"});
+		haxe_Log.trace("ontransition end",{ fileName : "MessagePopup.hx", lineNumber : 73, className : "app.view.components.popups.MessagePopup", methodName : "onAnimationEnd"});
 	}
-	,__class__: app_view_components_popups_InfoPopup
+	,__class__: app_view_components_popups_MessagePopup
 	,__properties__: {get_animationClassName:"get_animationClassName",set_message:"set_message"}
 });
 var app_view_components_todolist_TodoListItem = function(props) {
@@ -1403,27 +1481,32 @@ mmvc_impl_Mediator.__super__ = mmvc_base_MediatorBase;
 mmvc_impl_Mediator.prototype = $extend(mmvc_base_MediatorBase.prototype,{
 	__class__: mmvc_impl_Mediator
 });
-var app_view_mediators_InfoPopupMediator = function() {
+var app_view_mediators_MessagePopupMediator = function() {
 	mmvc_impl_Mediator.call(this);
 };
-$hxClasses["app.view.mediators.InfoPopupMediator"] = app_view_mediators_InfoPopupMediator;
-app_view_mediators_InfoPopupMediator.__name__ = ["app","view","mediators","InfoPopupMediator"];
-app_view_mediators_InfoPopupMediator.__super__ = mmvc_impl_Mediator;
-app_view_mediators_InfoPopupMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
+$hxClasses["app.view.mediators.MessagePopupMediator"] = app_view_mediators_MessagePopupMediator;
+app_view_mediators_MessagePopupMediator.__name__ = ["app","view","mediators","MessagePopupMediator"];
+app_view_mediators_MessagePopupMediator.__super__ = mmvc_impl_Mediator;
+app_view_mediators_MessagePopupMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.mediate(this.view.animationCompleteSignal.add($bind(this,this.handleAnimationComplete)));
-		this.mediate(this.messageModel.messageAddedSignal.add($bind(this,this.handleMessage)));
+		haxe_Log.trace("-> onRegister",{ fileName : "MessagePopupMediator.hx", lineNumber : 18, className : "app.view.mediators.MessagePopupMediator", methodName : "onRegister"});
+		this.messagePopupMediatorNotification.add($bind(this,this.handleNotification));
+		this.mediate(this.view.event.addWithPriority($bind(this,this.handleViewEvents),-1));
 	}
-	,handleMessage: function(text) {
-		this.messageModel.set_isMessageAnimating(true);
-		this.view.set_message(text);
+	,handleNotification: function(type,data) {
+		haxe_Log.trace("handleNotification: type = " + type,{ fileName : "MessagePopupMediator.hx", lineNumber : 26, className : "app.view.mediators.MessagePopupMediator", methodName : "handleNotification"});
+		if(type == app_controller_signals_notifications_MessagePopupMediatorNotification.SHOW_MESSAGE) {
+			this.view.set_message(Std.string(data));
+		}
 	}
-	,handleAnimationComplete: function() {
-		haxe_Log.trace("handleAnimationComplete: messages = " + this.messageModel.get_length(),{ fileName : "InfoPopupMediator.hx", lineNumber : 27, className : "app.view.mediators.InfoPopupMediator", methodName : "handleAnimationComplete"});
-		this.messageModel.set_isMessageAnimating(false);
+	,handleViewEvents: function(event,data) {
+		haxe_Log.trace("handleAnimationComplete: event = " + event,{ fileName : "MessagePopupMediator.hx", lineNumber : 37, className : "app.view.mediators.MessagePopupMediator", methodName : "handleViewEvents"});
+		if(event == enums_events_MessagePopupEvent.ANIMATION_ENDED) {
+			this.hiddenMessageSignal.dispatch();
+		}
 	}
-	,__class__: app_view_mediators_InfoPopupMediator
+	,__class__: app_view_mediators_MessagePopupMediator
 });
 var app_view_mediators_TodoFormMediator = function() {
 	mmvc_impl_Mediator.call(this);
@@ -1434,21 +1517,23 @@ app_view_mediators_TodoFormMediator.__super__ = mmvc_impl_Mediator;
 app_view_mediators_TodoFormMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
-		this.mediate(this.notificationsSignal.add($bind(this,this.handleNotification)));
+		haxe_Log.trace("-> onRegister",{ fileName : "TodoFormMediator.hx", lineNumber : 17, className : "app.view.mediators.TodoFormMediator", methodName : "onRegister"});
+		this.mediate(this.todoFormMediatorNotification.add($bind(this,this.handleNotification)));
 		this.mediate(this.view.addTodoButtonClickSignal.add($bind(this,this.handleAddTodo)));
 	}
 	,handleNotification: function(type,data) {
-		if(type == app_controller_signals_TodoFormMediatorNotificationSignal.CLEAR_FORM) {
+		switch(type) {
+		case app_controller_signals_notifications_TodoFormMediatorNotification.CLEAR:
 			this.view.clear();
+			break;
+		case app_controller_signals_notifications_TodoFormMediatorNotification.UNLOCK:
+			this.view.unlock();
+			break;
 		}
 	}
 	,handleAddTodo: function(text) {
 		this.view.lock();
-		this.createTodoSignal.complete.addOnce($bind(this,this.createTodoComplete));
 		this.createTodoSignal.dispatch(text);
-	}
-	,createTodoComplete: function(success) {
-		this.view.unlock();
 	}
 	,__class__: app_view_mediators_TodoFormMediator
 });
@@ -1461,11 +1546,12 @@ app_view_mediators_TodoListMediator.__super__ = mmvc_impl_Mediator;
 app_view_mediators_TodoListMediator.prototype = $extend(mmvc_impl_Mediator.prototype,{
 	onRegister: function() {
 		mmvc_impl_Mediator.prototype.onRegister.call(this);
+		haxe_Log.trace("-> onRegister",{ fileName : "TodoListMediator.hx", lineNumber : 26, className : "app.view.mediators.TodoListMediator", methodName : "onRegister"});
 		this.mediate(this.todoListMediatorNotificationSignal.add($bind(this,this.handleNotification)));
 		this.mediate(this.view.event.addWithPriority($bind(this,this.handleViewEvents),-1));
 	}
 	,handleViewEvents: function(event,data1) {
-		haxe_Log.trace("> handleViewEvents: event = " + event + " | data = " + Std.string(data1),{ fileName : "TodoListMediator.hx", lineNumber : 39, className : "app.view.mediators.TodoListMediator", methodName : "handleViewEvents"});
+		haxe_Log.trace("> handleViewEvents: event = " + event + " | data = " + Std.string(data1),{ fileName : "TodoListMediator.hx", lineNumber : 40, className : "app.view.mediators.TodoListMediator", methodName : "handleViewEvents"});
 		if(event == enums_events_TodoListEvent.TOGGLE_TODO) {
 			var value = data1;
 			this.processTodoEventToggle((value instanceof data_dto_todoListItem_TodoListItemToggleDTO) ? value : null);
@@ -1479,8 +1565,8 @@ app_view_mediators_TodoListMediator.prototype = $extend(mmvc_impl_Mediator.proto
 	}
 	,handleNotification: function(type,data) {
 		var _gthis = this;
-		haxe_Log.trace("> handleNotification: type = " + type,{ fileName : "TodoListMediator.hx", lineNumber : 52, className : "app.view.mediators.TodoListMediator", methodName : "handleNotification"});
-		if(type == app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS) {
+		haxe_Log.trace("> handleNotification: type = " + type,{ fileName : "TodoListMediator.hx", lineNumber : 54, className : "app.view.mediators.TodoListMediator", methodName : "handleNotification"});
+		if(type == app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS) {
 			var todos = data;
 			var result = [];
 			var index = 0;
@@ -1541,6 +1627,9 @@ data_vo_Todo.prototype = {
 	}
 	,__class__: data_vo_Todo
 };
+var enums_events_MessagePopupEvent = function() { };
+$hxClasses["enums.events.MessagePopupEvent"] = enums_events_MessagePopupEvent;
+enums_events_MessagePopupEvent.__name__ = ["enums","events","MessagePopupEvent"];
 var enums_events_TodoListEvent = function() { };
 $hxClasses["enums.events.TodoListEvent"] = enums_events_TodoListEvent;
 enums_events_TodoListEvent.__name__ = ["enums","events","TodoListEvent"];
@@ -3690,31 +3779,6 @@ mmvc_impl_TriggerCommand.prototype = {
 	}
 	,__class__: mmvc_impl_TriggerCommand
 };
-var msignal_Signal0 = function() {
-	msignal_Signal.call(this);
-};
-$hxClasses["msignal.Signal0"] = msignal_Signal0;
-msignal_Signal0.__name__ = ["msignal","Signal0"];
-msignal_Signal0.__super__ = msignal_Signal;
-msignal_Signal0.prototype = $extend(msignal_Signal.prototype,{
-	dispatch: function() {
-		var slotsToProcess = this.slots;
-		while(slotsToProcess.nonEmpty) {
-			slotsToProcess.head.execute();
-			slotsToProcess = slotsToProcess.tail;
-		}
-	}
-	,createSlot: function(listener,once,priority) {
-		if(priority == null) {
-			priority = 0;
-		}
-		if(once == null) {
-			once = false;
-		}
-		return new msignal_Slot0(this,listener,once,priority);
-	}
-	,__class__: msignal_Signal0
-});
 var msignal_Slot = function(signal,listener,once,priority) {
 	if(priority == null) {
 		priority = 0;
@@ -4025,7 +4089,7 @@ yloader_impl_js_XMLHttpRequestLoader.prototype = {
 	}
 	,getHeaders: function(xhr) {
 		var text = xhr.getAllResponseHeaders();
-		var result = yloader_util_HeaderUtil.toParameters(text);
+		var result = yloader_util_ParameterUtil.fromText(text);
 		return result;
 	}
 	,getResponse: function(xhr) {
@@ -4034,12 +4098,8 @@ yloader_impl_js_XMLHttpRequestLoader.prototype = {
 		var headers = this.getHeaders(xhr);
 		return new yloader_valueObject_Response(success,xhr.response,status,xhr.statusText,headers);
 	}
-	,isSuccess: function(status) {
-		if(status >= 200) {
-			return status < 400;
-		} else {
-			return false;
-		}
+	,isSuccess: function(statusCode) {
+		return yloader_util_StatusCodeUtil.isSuccess(statusCode);
 	}
 	,handleResponse: function(xhr) {
 		if(this.onResponse == null) {
@@ -4082,26 +4142,6 @@ yloader_impl_js_XMLHttpRequestLoader.prototype = {
 	}
 	,__class__: yloader_impl_js_XMLHttpRequestLoader
 };
-var yloader_util_HeaderUtil = function() { };
-$hxClasses["yloader.util.HeaderUtil"] = yloader_util_HeaderUtil;
-yloader_util_HeaderUtil.__name__ = ["yloader","util","HeaderUtil"];
-yloader_util_HeaderUtil.toParameters = function(text) {
-	var lines = text.split("\n");
-	var result = [];
-	var _g = 0;
-	while(_g < lines.length) {
-		var line = lines[_g];
-		++_g;
-		if(line == "") {
-			continue;
-		}
-		var data = line.split(":");
-		var name = StringTools.trim(data.shift());
-		var value = StringTools.trim(data.join(":"));
-		result.push(new yloader_valueObject_Parameter(name,value));
-	}
-	return result;
-};
 var yloader_util_ParameterUtil = function() { };
 $hxClasses["yloader.util.ParameterUtil"] = yloader_util_ParameterUtil;
 yloader_util_ParameterUtil.__name__ = ["yloader","util","ParameterUtil"];
@@ -4111,7 +4151,7 @@ yloader_util_ParameterUtil.update = function(list,parameter) {
 	while(_g < list.length) {
 		var item = list[_g];
 		++_g;
-		if(item.name == parameter.name) {
+		if(yloader_util_ParameterUtil.normalizeName(item.name) == yloader_util_ParameterUtil.normalizeName(parameter.name)) {
 			item.value = parameter.value;
 			found = true;
 		}
@@ -4164,6 +4204,60 @@ yloader_util_ParameterUtil.fromPair = function(pair) {
 		name = decodeURIComponent(pair.split("+").join(" "));
 	}
 	return new yloader_valueObject_Parameter(name,value);
+};
+yloader_util_ParameterUtil.fromText = function(text) {
+	var lines = text.split("\n");
+	var result = [];
+	var _g = 0;
+	while(_g < lines.length) {
+		var line = lines[_g];
+		++_g;
+		if(line == "") {
+			continue;
+		}
+		var data = line.split(":");
+		var name = StringTools.trim(data.shift());
+		var value = StringTools.trim(data.join(":"));
+		result.push(new yloader_valueObject_Parameter(name,value));
+	}
+	return result;
+};
+yloader_util_ParameterUtil.getContentLength = function(list) {
+	var _g = 0;
+	while(_g < list.length) {
+		var item = list[_g];
+		++_g;
+		if(yloader_util_ParameterUtil.normalizeName(item.name) == "content-length") {
+			return Std.parseInt(item.value);
+		}
+	}
+	return null;
+};
+yloader_util_ParameterUtil.setContentLength = function(value,target) {
+	yloader_util_ParameterUtil.update(target,new yloader_valueObject_Parameter("content-length",value == null ? "null" : "" + value));
+};
+yloader_util_ParameterUtil.toObject = function(list) {
+	var result = { };
+	var _g = 0;
+	while(_g < list.length) {
+		var item = list[_g];
+		++_g;
+		result[item.name] = item.value;
+	}
+	return result;
+};
+yloader_util_ParameterUtil.normalizeName = function(name) {
+	return name.toLowerCase();
+};
+var yloader_util_StatusCodeUtil = function() { };
+$hxClasses["yloader.util.StatusCodeUtil"] = yloader_util_StatusCodeUtil;
+yloader_util_StatusCodeUtil.__name__ = ["yloader","util","StatusCodeUtil"];
+yloader_util_StatusCodeUtil.isSuccess = function(statusCode) {
+	if(statusCode >= 200) {
+		return statusCode < 400;
+	} else {
+		return false;
+	}
 };
 var yloader_valueObject_Parameter = function(name,value) {
 	this.name = name;
@@ -4237,30 +4331,37 @@ Application.displayName = "Application";
 mmvc_api_IContext.__meta__ = { obj : { 'interface' : null}};
 mmvc_api_ICommand.__meta__ = { obj : { 'interface' : null}};
 mmvc_impl_Command.__meta__ = { fields : { contextView : { type : ["mmvc.api.IViewContainer"], inject : null}, commandMap : { type : ["mmvc.api.ICommandMap"], inject : null}, injector : { type : ["minject.Injector"], inject : null}, mediatorMap : { type : ["mmvc.api.IMediatorMap"], inject : null}, signal : { type : ["msignal.Signal"], inject : null}}};
-app_controller_commands_prepare_PrepareCompleteCommand.__meta__ = { fields : { todoModel : { type : ["app.model.TodoModel"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}}};
-app_controller_commands_prepare_PrepareControllerCommand.__meta__ = { fields : { createTodoSignal : { type : ["app.controller.signals.todoform.CreateTodoSignal"], inject : null}, deleteTodoSignal : { type : ["app.controller.signals.todolist.DeleteTodoSignal"], inject : null}, toggleTodoSignal : { type : ["app.controller.signals.todolist.ToggleTodoSignal"], inject : null}, updateTodoSignal : { type : ["app.controller.signals.todolist.UpdateTodoSignal"], inject : null}}};
-app_controller_commands_todo_CreateTodoCommand.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, todoFormMediatorNotificationSignal : { type : ["app.controller.signals.TodoFormMediatorNotificationSignal"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, text : { type : ["String"], inject : null}}};
-app_controller_commands_todo_DeleteTodoCommand.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
-app_controller_commands_todo_ToggleTodoCommand.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
-app_controller_commands_todo_UpdateTodoCommand.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}, text : { type : ["String"], inject : null}}};
-app_controller_signals_TodoFormMediatorNotificationSignal.PREFIX = "todoform_mediator_signal__";
-app_controller_signals_TodoFormMediatorNotificationSignal.CLEAR_FORM = app_controller_signals_TodoFormMediatorNotificationSignal.PREFIX + "clear_form";
-app_controller_signals_TodoListMediatorNotificationSignal.PREFIX = "todolist_mediator_notification_";
-app_controller_signals_TodoListMediatorNotificationSignal.SETUP_TODOS = app_controller_signals_TodoListMediatorNotificationSignal.PREFIX + "setdata";
-app_controller_signals_TodoListMediatorNotificationSignal.ADD_TODO = app_controller_signals_TodoListMediatorNotificationSignal.PREFIX + "addtodo";
+app_controller_commands_message_HiddenMessageCommand.__meta__ = { fields : { infoPopupMediatorNotification : { type : ["app.controller.signals.notifications.MessagePopupMediatorNotification"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}}};
+app_controller_commands_message_ShowMessageCommand.__meta__ = { fields : { messagePopupMediatorNotification : { type : ["app.controller.signals.notifications.MessagePopupMediatorNotification"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, message : { type : ["String"], inject : null}}};
+app_controller_commands_prepare_PrepareCompleteCommand.__meta__ = { fields : { todoModel : { type : ["app.model.TodoModel"], inject : null}, messageModel : { type : ["app.model.MessageModel"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, ListTodoMediatorNotificationSignal : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}}};
+app_controller_commands_prepare_PrepareControllerCommand.__meta__ = { fields : { createTodoSignal : { type : ["app.controller.signals.todoform.CreateTodoSignal"], inject : null}, deleteTodoSignal : { type : ["app.controller.signals.todolist.DeleteTodoSignal"], inject : null}, toggleTodoSignal : { type : ["app.controller.signals.todolist.ToggleTodoSignal"], inject : null}, updateTodoSignal : { type : ["app.controller.signals.todolist.UpdateTodoSignal"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, hiddenMessageSignal : { type : ["app.controller.signals.message.HiddenMessageSignal"], inject : null}}};
+app_controller_commands_todo_CreateTodoCommand.__meta__ = { fields : { listTodoMediatorNotification : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}, formTodoMediatorNotification : { type : ["app.controller.signals.notifications.TodoFormMediatorNotification"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, text : { type : ["String"], inject : null}}};
+app_controller_commands_todo_DeleteTodoCommand.__meta__ = { fields : { listTodoMediatorNotification : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
+app_controller_commands_todo_ToggleTodoCommand.__meta__ = { fields : { listTodoMediatorNotification : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}}};
+app_controller_commands_todo_UpdateTodoCommand.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}, showMessageSignal : { type : ["app.controller.signals.message.ShowMessageSignal"], inject : null}, todoModel : { type : ["app.model.TodoModel"], inject : null}, index : { type : ["Int"], inject : null}, text : { type : ["String"], inject : null}}};
+app_controller_signals_notifications_MessagePopupMediatorNotification.PREFIX = "infopopup_mediator_notification_";
+app_controller_signals_notifications_MessagePopupMediatorNotification.SHOW_MESSAGE = app_controller_signals_notifications_MessagePopupMediatorNotification.PREFIX + "set_message";
+app_controller_signals_notifications_TodoFormMediatorNotification.PREFIX = "todoform_mediator_notification_";
+app_controller_signals_notifications_TodoFormMediatorNotification.CLEAR = app_controller_signals_notifications_TodoFormMediatorNotification.PREFIX + "clear";
+app_controller_signals_notifications_TodoFormMediatorNotification.UNLOCK = app_controller_signals_notifications_TodoFormMediatorNotification.PREFIX + "unlock";
+app_controller_signals_notifications_TodoListMediatorNotification.PREFIX = "todolist_mediator_notification_";
+app_controller_signals_notifications_TodoListMediatorNotification.SETUP_TODOS = app_controller_signals_notifications_TodoListMediatorNotification.PREFIX + "setdata";
+app_controller_signals_notifications_TodoListMediatorNotification.ADD_TODO = app_controller_signals_notifications_TodoListMediatorNotification.PREFIX + "addtodo";
 mmvc_impl_Actor.__meta__ = { fields : { injector : { type : ["minject.Injector"], inject : null}}};
 app_model_service_ServerService.ERRRO_PARSING_INCOME_DATA = "Error in parsing data";
 app_model_service_ServerService.__instance = new app_model_service_ServerService();
 core_view_MediatedComponent.displayName = "MediatedComponent";
 app_view_components_TodoForm.displayName = "TodoForm";
 app_view_components_TodoList.displayName = "TodoList";
-app_view_components_popups_InfoPopup.displayName = "InfoPopup";
+app_view_components_popups_MessagePopup.displayName = "MessagePopup";
 app_view_components_todolist_TodoListItem.displayName = "TodoListItem";
 mmvc_api_IMediator.__meta__ = { obj : { 'interface' : null}};
 mmvc_impl_Mediator.__meta__ = { fields : { injector : { type : ["minject.Injector"], inject : null}, contextView : { type : ["mmvc.api.IViewContainer"], inject : null}, mediatorMap : { type : ["mmvc.api.IMediatorMap"], inject : null}}};
-app_view_mediators_InfoPopupMediator.__meta__ = { fields : { messageModel : { type : ["app.model.MessageModel"], inject : null}}};
-app_view_mediators_TodoFormMediator.__meta__ = { fields : { notificationsSignal : { type : ["app.controller.signals.TodoFormMediatorNotificationSignal"], inject : null}, createTodoSignal : { type : ["app.controller.signals.todoform.CreateTodoSignal"], inject : null}}};
-app_view_mediators_TodoListMediator.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.TodoListMediatorNotificationSignal"], inject : null}, deleteTodoSignal : { type : ["app.controller.signals.todolist.DeleteTodoSignal"], inject : null}, updateTodoSignal : { type : ["app.controller.signals.todolist.UpdateTodoSignal"], inject : null}, toggleTodoSignal : { type : ["app.controller.signals.todolist.ToggleTodoSignal"], inject : null}}};
+app_view_mediators_MessagePopupMediator.__meta__ = { fields : { messagePopupMediatorNotification : { type : ["app.controller.signals.notifications.MessagePopupMediatorNotification"], inject : null}, hiddenMessageSignal : { type : ["app.controller.signals.message.HiddenMessageSignal"], inject : null}}};
+app_view_mediators_TodoFormMediator.__meta__ = { fields : { todoFormMediatorNotification : { type : ["app.controller.signals.notifications.TodoFormMediatorNotification"], inject : null}, createTodoSignal : { type : ["app.controller.signals.todoform.CreateTodoSignal"], inject : null}}};
+app_view_mediators_TodoListMediator.__meta__ = { fields : { todoListMediatorNotificationSignal : { type : ["app.controller.signals.notifications.TodoListMediatorNotification"], inject : null}, deleteTodoSignal : { type : ["app.controller.signals.todolist.DeleteTodoSignal"], inject : null}, updateTodoSignal : { type : ["app.controller.signals.todolist.UpdateTodoSignal"], inject : null}, toggleTodoSignal : { type : ["app.controller.signals.todolist.ToggleTodoSignal"], inject : null}}};
+enums_events_MessagePopupEvent.PREFIX = "event_messagepopup_";
+enums_events_MessagePopupEvent.ANIMATION_ENDED = enums_events_MessagePopupEvent.PREFIX + "animation_ended";
 enums_events_TodoListEvent.PREFIX = "event_todolist_";
 enums_events_TodoListEvent.UPDATE_TODO = enums_events_TodoListEvent.PREFIX + "update";
 enums_events_TodoListEvent.DELETE_TODO = enums_events_TodoListEvent.PREFIX + "delete";
@@ -4295,6 +4396,7 @@ yloader_enums_Status.UNKNOWN = -2;
 yloader_enums_Status.FAILED_TO_CONNECT_OR_RESOLVE_HOST = -1;
 yloader_enums_Status.UNKNOWN_HOST = 12007;
 yloader_enums_Status.FAILED_TO_CONNECT_TO_HOST = 12029;
+yloader_util_ParameterUtil.PARAMETER_CONTENT_LENGTH = "content-length";
 Main.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 

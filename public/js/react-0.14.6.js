@@ -1518,7 +1518,7 @@ var DOMProperty = {
   ID_ATTRIBUTE_NAME: 'data-reactid',
 
   /**
-   * Map from property "standard name" to an object with info about how to set
+   * Map from property "standard name" to an object with message about how to set
    * the property in the DOM. Each object contains:
    *
    * attributeName:

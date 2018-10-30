@@ -1,18 +1,17 @@
 package app.view.components.popups;
-import msignal.Signal.Signal0;
+
+import enums.events.MessagePopupEvent;
 import core.view.Component.Refs;
 import core.view.Component.State;
 import core.view.MediatedComponent;
 import js.html.DivElement;
 import react.React;
 
-class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
+class MessagePopup extends MediatedComponent<MediatedProps, MessagePopupState, Refs>
 {
-	public var animationCompleteSignal:Signal0 = new Signal0();
+	private var _domInfoPopup:DivElement;
 
-	public var domInfoPopup:DivElement;
-
-	public var message(default, set):String = "";
+	public var message(default, set):String = "empty";
 	private function set_message(value:String):String
 	{
 		if (message != value)
@@ -36,7 +35,7 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 	override public function render()
 	{
 		return React.createElement('div', {className:getClassName(), onAnimationEnd:onAnimationEnd,
-			ref:function(dom) { domInfoPopup = dom; }, children:state.message});
+			ref:function(dom) { _domInfoPopup = dom; }, children:state.message});
 	}
 
 	public function isActive():Bool
@@ -44,29 +43,29 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 		return state.message.length > 0;
 	}
 
-	override function componentDidUpdate(prevProps:MediatedProps, prevState:InfoPopupState):Void
+	override function componentDidUpdate(prevProps:MediatedProps, prevState:MessagePopupState):Void
 	{
 		if(isActive())
 		{
-			domInfoPopup.addEventListener("animationend", handlerAnimationEnd, false);
+			_domInfoPopup.addEventListener("animationend", handlerAnimationEnd, false);
 
 			haxe.Timer.delay(function()
 			{
-				domInfoPopup.classList.add(animationClassName);
+				_domInfoPopup.classList.add(animationClassName);
 			}, 0);
 		}
 	}
 
 	override function componentWillUnmount()
 	{
-		domInfoPopup.removeEventListener("animationend", handlerAnimationEnd);
+		_domInfoPopup.removeEventListener("animationend", handlerAnimationEnd);
 		super.componentWillUnmount();
 	}
 
 	private function handlerAnimationEnd()
 	{
-		domInfoPopup.classList.remove(animationClassName);
-		animationCompleteSignal.dispatch();
+		_domInfoPopup.classList.remove(animationClassName);
+		event.dispatch(MessagePopupEvent.ANIMATION_ENDED, null);
 	}
 
 	function onAnimationEnd()
@@ -75,6 +74,6 @@ class InfoPopup extends MediatedComponent<MediatedProps, InfoPopupState, Refs>
 	}
 }
 
-typedef InfoPopupState = {>State,
+typedef MessagePopupState = {>State,
 	@:optional var message:String;
 }

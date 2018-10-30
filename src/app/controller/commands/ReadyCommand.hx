@@ -1,14 +1,14 @@
-package app.controller.commands.prepare;
+package app.controller.commands;
 
 import app.controller.signals.message.ShowMessageSignal;
 import app.controller.signals.notifications.TodoListMediatorNotification;
-import data.vo.Todo;
 import app.model.MessageModel;
 import app.model.TodoModel;
+import data.vo.Todo;
 import enums.strings.MessageStrings;
 import mmvc.impl.Command;
 
-class PrepareCompleteCommand extends Command
+class ReadyCommand extends Command
 {
 	@inject public var todoModel:TodoModel;
 	@inject public var messageModel:MessageModel;
@@ -19,8 +19,9 @@ class PrepareCompleteCommand extends Command
 
 	override public function execute():Void
 	{
-		trace("-> execute: ");
+		trace("-> execute");
 
+		showMessageSignal.dispatch(MessageStrings.PREPARING);
 		todoModel.loadTodos(callbackLoadTodosComplete);
 	}
 
